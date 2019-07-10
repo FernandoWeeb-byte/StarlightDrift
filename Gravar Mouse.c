@@ -20,6 +20,7 @@ int main(void){
             z=0;
         }
         if (z){
+            DrawText("GRAVANDO",683,384,20,RED);
             fprintf (inimigos, "%i %i\n",(int)mouse.x,(int)mouse.y);
         }
         EndDrawing();
@@ -27,22 +28,3 @@ int main(void){
     fclose(inimigos);
     CloseWindow();
 }
-/*
-nt main ()
-{
-   FILE * pFile;
-   int n;
-   char name [100];
-
-   pFile = fopen ("myfile.txt","w");
-   for (n=0 ; n<3 ; n++)
-   {
-     puts ("please, enter a name: ");
-     gets (name);
-     fprintf (pFile, "Name %d [%-10.10s]\n",n+1,name);
-   }
-   fclose (pFile);
-
-   return 0;
-}
-*/
