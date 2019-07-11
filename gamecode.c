@@ -58,14 +58,14 @@ void creditos()
         DrawText("Luiz Fernando Barbosa",70,550,50,RAYWHITE);
         DrawText("Pressione M para sair",100,750,20,RAYWHITE);
         EndDrawing();
-        if(IsKeyPressed('M'))
+        if(IsKeyPressed(KEY_M))
             break;
         
     }
 }
 
 
-void menuu (Texture2D* luacristal,Texture2D* nave,float* vol,Texture2D* fundo,Sound* menu,Texture2D* FFXV,Texture2D* Fundolua)
+void menuu (Texture2D* luacristal,Texture2D* nave,float* vol,Texture2D* fundo,Sound* menu,Texture2D* FFXV,Texture2D* Fundolua,Sound* laser)
 {
    int cont;
    float contador2=0.3;
@@ -82,7 +82,6 @@ void menuu (Texture2D* luacristal,Texture2D* nave,float* vol,Texture2D* fundo,So
    PlaySound(*menu);   
    while(1)
         {
-           
            volume(vol);
            int posicaodomousex=GetMouseX();
            int posicaodomousey=GetMouseY(); 
@@ -144,6 +143,7 @@ void menuu (Texture2D* luacristal,Texture2D* nave,float* vol,Texture2D* fundo,So
                                 UnloadTexture(*FFXV);
                                 UnloadTexture(*Fundolua);
                                 UnloadSound(*menu);
+                                UnloadSound(*laser);
                                 CloseWindow();
                             }
                                 
@@ -174,7 +174,7 @@ void Pause(int* pont)
             EndDrawing();
             if(IsKeyPressed(KEY_P))
                 break;
-            if(IsKeyPressed('M'))
+            if(IsKeyPressed(KEY_M))
             {
               (*pont) = 1;
               break;
@@ -183,56 +183,61 @@ void Pause(int* pont)
     
 }
 
-void Troca_tiro(int *tipo)
+/*void Troca_tiro(int *tipo)
 {
-    if(IsKeyPressed('0'))
+    if(IsKeyPressed(KEY_0))
     {
         (*tipo) = 0;
     }
-    if(IsKeyPressed('1'))
+    if(IsKeyPressed(KEY_1))
     {
         (*tipo) = 1;
     }
-    if(IsKeyPressed('2'))
+    if(IsKeyPressed(KEY_2))
     {
         (*tipo) = 2;
     }
-    if(IsKeyPressed('3'))
+    if(IsKeyPressed(KEY_3))
     {
         (*tipo) = 3;
     }
-}
+}*/
 
 void Movimento() //Função de movimentação
 {
-    if(IsKeyDown('W'))
+    if(IsKeyDown(KEY_W)&&jogador.nave.y>0)
     {
         jogador.nave.y -= jogador.vel.y;
     }
-    if(IsKeyDown('A'))
+    if(IsKeyDown(KEY_A)&&jogador.nave.x>0)
     {
         jogador.nave.x -= jogador.vel.x;
     }
-    if(IsKeyDown('S'))
+    if(IsKeyDown(KEY_S)&&jogador.nave.y<806)
     {
         jogador.nave.y += jogador.vel.y;
     }
-    if(IsKeyDown('D'))
+    if(IsKeyDown(KEY_D)&&jogador.nave.x<680)
     {
         jogador.nave.x += jogador.vel.x;
     }
     
 }
 float VolumeBalas(float* vol2){
-    if (IsKeyPressed(KEY_LEFT)&&*vol2>0.0f){
+    if (IsKeyPressed(KEY_LEFT)&&*vol2>0.1f){
             *vol2-=0.1f;
         }
         else if (IsKeyPressed(KEY_RIGHT)&&*vol2<1.0f){
             *vol2+=0.1f;
         }
         return *vol2;
+        
 }
 void SomDasBalas(int tiro,Sound* laser){
+    SetSoundVolume(laser[0],0.05f);
+    SetSoundVolume(laser[2],0.05f);
+    SetSoundVolume(laser[3],0.05f);
+    
     switch (tiro){
         case 0:{
             PlaySound(laser[1]);
@@ -270,27 +275,27 @@ void BarraEspecial(Player jogador,int* tiro, float* mult, Rectangle barra){
     if (IsKeyDown(KEY_SPACE)&&*mult<1.0f){
         *mult+=0.005f;
     }
-    else if (!IsKeyDown(KEY_SPACE&&*mult>0.1f)){
+    else if ((!IsKeyDown(KEY_SPACE))&&(*mult>0.1f)){
         *mult-=0.012f;
     }
     if (*mult<0.0f){
         *mult=0.0f;
     }
     barra.width*=*mult;
-    if (*mult<=0.40){
-        *tiro=0;
+    if (*mult<=0.20){
+        *tiro=3;
         DrawRectangleRec(barra,GREEN);
     }
-    if (*mult>0.40f&&*mult<=0.70f){
-        *tiro=1;
+    if (*mult>0.20f&&*mult<=0.40f){
+        *tiro=2;
         DrawRectangleRec(barra,YELLOW);
     }
-    else if (*mult>0.70f&&*mult<=0.90f){
-        *tiro=2;
+    else if (*mult>0.40f&&*mult<=0.60f){
+        *tiro=1;
         DrawRectangleRec(barra,ORANGE);
     }
-    else if (*mult>0.90f&&*mult<=1.1f){
-        *tiro=3;
+    else if (*mult>0.60f&&*mult<=1.1f){
+        *tiro=0;
         DrawRectangleRec(barra,RED);
     }
     
@@ -440,6 +445,7 @@ int main(void)
     //Definindo resolução da tela
     const int Largura_Tela = 720;
     const int Altura_Tela = 876;
+   InitAudioDevice();
     //criando variavel dos arquivos de audio
     Sound menu;
     Sound laser[4];
@@ -449,7 +455,7 @@ int main(void)
     laser[3]=LoadSound("/raylib/StarlightDrift/sounds/laser.ogg");
     //criando var de volume e barra de especial
     float vol=1.0f;
-    float vol2=1.0f;
+    float vol2=0.1f;
     float mult=0;
     
     //Definindo parâmetros do player(e alguns dos tiros do player)
@@ -471,7 +477,6 @@ int main(void)
     
     //Inicializando janela e áudio
     InitWindow(Largura_Tela,Altura_Tela,"Starlight Drift");
-    InitAudioDevice();
     
     //carregando imagens e criando texturas, favor copiar o caminho e copiar
    // Image imageyy = LoadImage("/raylib/StarlightDrift/texture/fundo.png");
@@ -510,7 +515,7 @@ int main(void)
         checkmenu=0;
         //funcao menu
         
-        menuu(&luacristal,&nave,&vol,&fundo,&menu,&FFXV,&Fundolua);
+        menuu(&luacristal,&nave,&vol,&fundo,&menu,&FFXV,&Fundolua,&laser);
         
         
     while(1)
@@ -526,7 +531,7 @@ int main(void)
         movbackground += 3.0; //velocidade do background
         if(movbackground >= background.height) movbackground = 0; //looping do background
         
-        Troca_tiro(&jogador.tipo_tiro);
+        //Troca_tiro(&jogador.tipo_tiro);
         BeginDrawing();
         ClearBackground(RAYWHITE);
         DrawTextureEx(fundo,(Vector2){0,movbackground},0.0f,1.0f,WHITE);
@@ -543,15 +548,13 @@ int main(void)
         if (IsKeyDown(KEY_SPACE)){
             SomDasBalas(jogador.tipo_tiro,laser);
         }
+        
         vol2=VolumeBalas(&vol2);
-        for (int i=0;i<4;i++){
-            SetSoundVolume(laser[i],vol2);
-        }
+        SetSoundVolume(laser[1],vol2);
         BarraEspecial(jogador,&jogador.tipo_tiro,&mult,barra);
         EndDrawing();
+        
     }
 }
-   // UnloadTexture(bck); 
-    UnloadTexture(nave);    
     return 0;
 }
