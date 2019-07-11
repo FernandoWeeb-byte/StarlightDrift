@@ -143,7 +143,10 @@ void menuu (Texture2D* luacristal,Texture2D* nave,float* vol,Texture2D* fundo,So
                                 UnloadTexture(*FFXV);
                                 UnloadTexture(*Fundolua);
                                 UnloadSound(*menu);
-                                UnloadSound(*laser);
+                                UnloadSound(laser[0]);
+                                UnloadSound(laser[1]);
+                                UnloadSound(laser[2]);
+                                UnloadSound(laser[3]);
                                 CloseWindow();
                             }
                                 
@@ -515,7 +518,7 @@ int main(void)
         checkmenu=0;
         //funcao menu
         
-        menuu(&luacristal,&nave,&vol,&fundo,&menu,&FFXV,&Fundolua,&laser);
+        menuu(&luacristal,&nave,&vol,&fundo,&menu,&FFXV,&Fundolua,laser);
         
         
     while(1)
