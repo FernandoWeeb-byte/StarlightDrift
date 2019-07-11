@@ -30,7 +30,7 @@ typedef struct Bala //Estrutura com parâmetros para movimentação dos tiros
 
 static Player jogador = {0};
 static Bala bala[50] = {0}; //O vetor bala é necessário pois cada elemento dele é uma bala na tela
-static Bala bala2[50] = {0};
+static Bala bala2[50] = {0}; //Outros vetores são para outros tipos de tiro com múltiplas balas
 static Bala bala3[50] = {0};
 static Bala bala4[50] = {0};
 
@@ -186,7 +186,7 @@ void Pause(int* pont)
     
 }
 
-/*void Troca_tiro(int *tipo)
+/*void Troca_tiro(int *tipo) //Função de teste para troca do tipo de tiro
 {
     if(IsKeyPressed(KEY_0))
     {
@@ -320,14 +320,14 @@ void Tiro(Player jogador,int* firerate)
                 if(!bala[i].ativa)
                 {
                     //A bala inicia na posição do player, na "ponta da frente"
-                    if(jogador.tipo_tiro == 0)
+                    if(jogador.tipo_tiro == 0) //Caso o tipo de tiro seja Tiro Único, somente uma bala é alocada, posicionada na parte frontal da nave
                     {
                         bala[i].tipo_tiro = 0;
                         bala[i].posicao.x = jogador.nave.x + 20; 
                         bala[i].posicao.y = jogador.nave.y - 8;
                         bala[i].ativa = true;
                     }
-                    else if(jogador.tipo_tiro == 1)
+                    else if(jogador.tipo_tiro == 1) //Caso o tipo de tiro seja Tiro Duplas, 2 balas são posicionadas parelelamente
                     {
                         bala[i].tipo_tiro = 1;
                         bala[i].posicao.x = jogador.nave.x + 15; 
@@ -338,7 +338,7 @@ void Tiro(Player jogador,int* firerate)
                         bala2[i].posicao.y = jogador.nave.y - 8;
                         bala2[i].ativa = true;
                     }
-                    else if(jogador.tipo_tiro == 2)
+                    else if(jogador.tipo_tiro == 2) //Caso o tipo de tiro seja Spread Shot, 3 balas são posicionadas no msm lugar, mas cada vai se movimentar de um jeito
                     {
                         bala[i].tipo_tiro = 2;
                         bala[i].posicao.x = jogador.nave.x + 20; 
@@ -354,7 +354,7 @@ void Tiro(Player jogador,int* firerate)
                         bala3[i].ativa = true;
                         
                     }
-                    else if(jogador.tipo_tiro == 3)
+                    else if(jogador.tipo_tiro == 3) //Caso o tipo de tiro seja Spreadshot duplo(sla o nome pra isso) 2 balas são posicionadas como tiro duplo, e mais 2 balas são posicionadas na esquerda e na direita
                     {
                         bala[i].tipo_tiro = 3;
                         bala[i].posicao.x = jogador.nave.x + 15; 
@@ -381,53 +381,53 @@ void Tiro(Player jogador,int* firerate)
         }
     }
 
-    for(int i = 0;i<50;i++)
+    for(int i = 0;i<50;i++) //For pra movimentação das balas
     {
-        if(bala[i].tipo_tiro == 0)
+        if(bala[i].tipo_tiro == 0) //Caso seja tiro único
         {
             if(bala[i].posicao.y>0 && bala[i].ativa)
             {
                 //A bala se movimenta de acordo com a "shotspeed(Velocidade do tiro)"
-                bala[i].posicao.y -= jogador.shotspeed.y;
+                bala[i].posicao.y -= jogador.shotspeed.y; //Bala se movimenta e linha reta
                 DrawCircle(bala[i].posicao.x,bala[i].posicao.y,3,jogador.cor_bala);
             }
         }
-        else if(bala[i].tipo_tiro == 1)
+        else if(bala[i].tipo_tiro == 1) //Caso seja tiro duplo
         {
             if(bala[i].posicao.y>0 && bala[i].ativa && bala2[i].posicao.y>0 && bala2[i].ativa)
-            {
-                bala[i].posicao.y -= jogador.shotspeed.y;
+            {   //2 balas se movimentam em linha reta
+                bala[i].posicao.y -= jogador.shotspeed.y; 
                 DrawCircle(bala[i].posicao.x,bala[i].posicao.y,3,jogador.cor_bala);
                 bala2[i].posicao.y -= jogador.shotspeed.y;
                 DrawCircle(bala2[i].posicao.x,bala2[i].posicao.y,3,jogador.cor_bala);
             }
         }
-        else if(bala[i].tipo_tiro == 2)
+        else if(bala[i].tipo_tiro == 2) //Caso seja spreadshot
         {
             if(bala[i].posicao.y>0 && bala[i].ativa && bala2[i].posicao.y>0 && bala2[i].ativa && bala3[i].posicao.y>0 && bala3[i].ativa)
             {
-                bala[i].posicao.y -= jogador.shotspeed.y;
+                bala[i].posicao.y -= jogador.shotspeed.y;//Uma bala se movimenta diagonalmente pra esquerda
                 bala[i].posicao.x -= jogador.shotspeed.x;
                 DrawCircle(bala[i].posicao.x,bala[i].posicao.y,3,jogador.cor_bala);
-                bala2[i].posicao.y -= jogador.shotspeed.y;
+                bala2[i].posicao.y -= jogador.shotspeed.y;//Outra bala se movimenta em linha reta para frente
                 DrawCircle(bala2[i].posicao.x,bala2[i].posicao.y,3,jogador.cor_bala);
-                bala3[i].posicao.y -= jogador.shotspeed.y;
+                bala3[i].posicao.y -= jogador.shotspeed.y;//E outra bala se movimenta diagonalmente pra direita
                 bala3[i].posicao.x += jogador.shotspeed.x;
                 DrawCircle(bala3[i].posicao.x,bala3[i].posicao.y,3,jogador.cor_bala);
             }
         }
-        else if(bala[i].tipo_tiro == 3)
+        else if(bala[i].tipo_tiro == 3) //Caso seja spreadshot cm tiro duplo
         {
             if(bala[i].posicao.y>0 && bala[i].ativa && bala2[i].posicao.y>0 && bala2[i].ativa && bala3[i].posicao.y>0 && bala3[i].ativa && bala4[i].posicao.y>0 && bala4[i].ativa)
             {
-                bala[i].posicao.y -= jogador.shotspeed.y;
+                bala[i].posicao.y -= jogador.shotspeed.y; //2 balas se movimentam em linha reta para frente
                 DrawCircle(bala[i].posicao.x,bala[i].posicao.y,3,jogador.cor_bala);
                 bala2[i].posicao.y -= jogador.shotspeed.y;
                 DrawCircle(bala2[i].posicao.x,bala2[i].posicao.y,3,jogador.cor_bala);
-                bala3[i].posicao.y -= jogador.shotspeed.y;
+                bala3[i].posicao.y -= jogador.shotspeed.y;// uma bala se movimenta diagonalmente pra esquerda
                 bala3[i].posicao.x -= jogador.shotspeed.x;
                 DrawCircle(bala3[i].posicao.x,bala3[i].posicao.y,3,jogador.cor_bala);
-                bala4[i].posicao.y -= jogador.shotspeed.y;
+                bala4[i].posicao.y -= jogador.shotspeed.y;// uma bala se movimenta diagonalmente pra direita
                 bala4[i].posicao.x += jogador.shotspeed.x;
                 DrawCircle(bala4[i].posicao.x,bala4[i].posicao.y,3,jogador.cor_bala);
             }
