@@ -228,13 +228,13 @@ void DrawGame(void){
 
 void Movimento(void)
 {
-    if(IsKeyDown('W'))
+    if(IsKeyDown('W') && jogador.posicao.y >= jogador.raio)
         jogador.posicao.y -= jogador.vel.y;
-    if(IsKeyDown('A'))
+    if(IsKeyDown('A') && jogador.posicao.x >= jogador.raio)
         jogador.posicao.x -= jogador.vel.x;
-    if(IsKeyDown('S'))
+    if(IsKeyDown('S') && jogador.posicao.y <= Altura_Tela - 45)
         jogador.posicao.y += jogador.vel.y;
-    if(IsKeyDown('D'))
+    if(IsKeyDown('D') && jogador.posicao.x <= Largura_Tela - 45)
         jogador.posicao.x += jogador.vel.x;
 }
 
