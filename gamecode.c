@@ -76,7 +76,7 @@ static void Inicializa_jogador(void);
 static void InitMenu(void);     //Iniciar arquivos do menu 
 static void UnloadMenu(void);   //Descarregar arquivos do menu
 static GAMESTATE LevelSelect(void);      //Escolhe a fase
-
+static GAMESTATE Jogo(void);
 static GAMESTATE MenuScreen(void);   //Menu inicial
 static GAMESTATE Creditos(void);     //Creditos
 static GAMESTATE Ops(void);          //Opções
@@ -105,7 +105,7 @@ int main(void)
             
             case JOGO:
                 InitGame();
-                gameState = LevelSelect();
+                gameState = Jogo();
                 UnloadGame();
             break;
             case CREDITOS:
@@ -156,12 +156,12 @@ void UnloadMenu(void)
 void InitGame(void){
     Image NaveImg = LoadImage("/raylib/StarlightDrift/texture/nave.png");
     
-    ImageResize(&NaveImg,10,10);
+    ImageResize(&NaveImg,40,50);
     
     
     Nave = LoadTextureFromImage(NaveImg);
    
-    
+    InitMovBackground();
     Inicializa_jogador();
     Inicializa_tiro();
     
@@ -204,18 +204,40 @@ void UnloadGame(void){
 }
 void UpdateGame(void){
     movbackground += 3.0; //velocidade do background
-    if(movbackground >= background.height) {
+    if(movbackground >= fundo.height) {
         movbackground = 0; //looping do background
     }
     
+    Movimento();
     
 }
 void DrawGame(void){
-    BeginDrawing();
+    ClearBackground(BLACK);
     DrawTextureEx(fundo,(Vector2){0,movbackground},0.0f,1.0f,WHITE);
-    DrawTextureEx(fundo,(Vector2){0,-background.height + movbackground},0.0f,1.0f,WHITE);
-    EndDrawing();
+    DrawTextureEx(fundo,(Vector2){0,-fundo.height + movbackground},0.0f,1.0f,WHITE);
+    DrawTexture(Nave,jogador.posicao.x,jogador.posicao.y,RAYWHITE);
+    
+    for(int i = 0;i<MAX_TIROS;i++)
+    {
+        if(tiro[i].ativa)
+        {
+            DrawCircle(tiro[i].posicao.x,tiro[i].posicao.y,3,tiro[i].cor);
+        }
+    }
 }
+
+void Movimento(void)
+{
+    if(IsKeyDown('W'))
+        jogador.posicao.y -= jogador.vel.y;
+    if(IsKeyDown('A'))
+        jogador.posicao.x -= jogador.vel.x;
+    if(IsKeyDown('S'))
+        jogador.posicao.y += jogador.vel.y;
+    if(IsKeyDown('D'))
+        jogador.posicao.x += jogador.vel.x;
+}
+
 int Level1(int Vidas){
     while (!gameOver){
         UpdateGame();
@@ -312,6 +334,46 @@ GAMESTATE Creditos(void)
         DrawRectangle(0, 0, Largura_Tela, Altura_Tela, Fade(BLACK, alpha));
     EndDrawing();
     }
+}
+
+GAMESTATE Jogo(void)
+{
+    float alpha = 1.0f;
+    bool FadeIn = true;
+    bool FadeOut = false;
+    
+    while(!WindowShouldClose())
+    {
+        
+        if(FadeIn)
+        {
+            alpha -= 0.01f;
+            if(alpha<=0)
+            {
+                alpha = 0;
+                FadeIn = false;
+            }
+        } else
+        if(FadeOut)
+        {
+            alpha += 0.01f;
+            if (alpha >= 1)
+            {
+                alpha = 1.0f;
+                return MENU;
+            }
+        }
+        
+        StopSound(menu);
+        
+        BeginDrawing();
+
+        UpdateGame();
+        DrawGame();
+        DrawRectangle(0, 0, Largura_Tela, Altura_Tela, Fade(BLACK, alpha));
+        
+        EndDrawing();
+    }   
 }
 
 GAMESTATE Ops(void)
