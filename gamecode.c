@@ -13,6 +13,24 @@
 
 typedef enum {MENU=0, JOGO, CREDITOS, OPCOES, SAIR} GAMESTATE;
 
+typedef struct Tiro
+{
+    Vector2 posicao;
+    Vector2 vel_bala;
+    Color cor;
+    bool ativa;
+}Tiro;
+
+typedef struct Player
+{
+    Vector2 posicao;
+    Vector2 vel;
+    Color cor;
+    float raio;
+    float firerate;
+    int tiro;
+}Player;
+
 //-------------------------------------
 //Variaveis Globais
 //-------------------------------------
@@ -21,9 +39,11 @@ static const int Altura_Tela = 876;
 static bool gameOver = false;
 static bool pause = false;
 
+static Rectangle background;
+static float movbackground;
 static Texture2D Nave;
-static Texture2D FundoJogo;
-
+static Texture2D fundo;
+static Texture2D FundodeFernando;
 static Texture2D FFXV;
 static Texture2D luacristal;
 static Texture2D Fundolua;
@@ -31,6 +51,9 @@ static GAMESTATE gameState;
 
 static Sound menu;
 static Sound Laser;
+
+static Tiro tiro[MAX_TIROS];
+static Player jogador;
 //static Music musicas;
 static float vol = 1;
 
@@ -38,6 +61,8 @@ static float vol = 1;
 //-------------------------------------
 //Funcoes Modulares Locais
 //-------------------------------------
+static void InitMovBackground(void);
+
 static int Level1(int Vidas);       //Level1 
 static int Level2(int Vidas);       //Level2 
 static int Level3(int Vidas);       //Level3
@@ -45,8 +70,9 @@ static int Level3(int Vidas);       //Level3
 
 static void InitGame(void);     //Iniciar o jogo
 static void UnloadGame(void);   //Descarregar arquivos do jogo
-
-
+static void Movimento(void);
+static void Inicializa_tiro(void);
+static void Inicializa_jogador(void);
 static void InitMenu(void);     //Iniciar arquivos do menu 
 static void UnloadMenu(void);   //Descarregar arquivos do menu
 static GAMESTATE LevelSelect(void);      //Escolhe a fase
@@ -125,41 +151,75 @@ void UnloadMenu(void)
     UnloadTexture(FFXV);
     UnloadTexture(luacristal);
     UnloadTexture(Fundolua);
-    StopSound(menu);
-    UnloadSound(menu);
 }
+
 void InitGame(void){
     Image NaveImg = LoadImage("/raylib/StarlightDrift/texture/nave.png");
-    Image FundoJogoImg = LoadImage("/raylib/StarlightDrift/texture/space.png");
     
     ImageResize(&NaveImg,10,10);
-    ImageResize(&FundoJogoImg,720,876);
+    
     
     Nave = LoadTextureFromImage(NaveImg);
-    FundoJogo = LoadTextureFromImage(FundoJogoImg);
+   
     
-    //Laser = LoadSound()
+    Inicializa_jogador();
+    Inicializa_tiro();
     
     UnloadImage(NaveImg);
-    UnloadImage(FundoJogoImg);
+}
+void InitMovBackground(void){
+    Image FundodeFernando = LoadImage("/raylib/StarlightDrift/texture/space.png");
+    
+    ImageResize(&FundodeFernando,720,876);
+    
+    fundo=LoadTextureFromImage(FundodeFernando);
+    
+    UnloadImage(FundodeFernando);
+}
+void Inicializa_jogador(void)
+{
+    jogador.posicao.x = 360;
+    jogador.posicao.y = 700;
+    jogador.vel.x = 8;
+    jogador.vel.y = 8;
+    jogador.cor = BLUE;
+    jogador.raio = 8;
+    jogador.tiro = 1;
+}
+void Inicializa_tiro(void)
+{
+    for(int i = 0;i<MAX_TIROS;i++)
+    {
+        tiro[i].posicao.x = jogador.posicao.x;
+        tiro[i].posicao.y = jogador.posicao.y + 8;
+        tiro[i].vel_bala.y = 15;
+        tiro[i].vel_bala.x = 2;
+        tiro[i].ativa = false;
+        tiro[i].cor = ORANGE;
+    }
 }
 void UnloadGame(void){
     UnloadTexture(Nave);
-    UnloadTexture(FundoJogo);
+    UnloadTexture(FundodeFernando);
 }
-void UpdateGame(){
+void UpdateGame(void){
+    movbackground += 3.0; //velocidade do background
+    if(movbackground >= background.height) {
+        movbackground = 0; //looping do background
+    }
+    
     
 }
-void DrawGame(){
+void DrawGame(void){
     BeginDrawing();
+    DrawTextureEx(fundo,(Vector2){0,movbackground},0.0f,1.0f,WHITE);
+    DrawTextureEx(fundo,(Vector2){0,-background.height + movbackground},0.0f,1.0f,WHITE);
     EndDrawing();
 }
 int Level1(int Vidas){
     while (!gameOver){
         UpdateGame();
         DrawGame();
-        Vidas--;
-        
     }
     return Vidas;
 }
@@ -168,7 +228,7 @@ int Level2(int Vidas){
     while (!gameOver){
         UpdateGame();
         DrawGame();
-        Vidas--;
+        
         
     }
     return Vidas;
@@ -178,7 +238,7 @@ int Level3(int Vidas){
     while (!gameOver){
         UpdateGame();
         DrawGame();
-        Vidas--;
+        
         
     }
     return Vidas;
