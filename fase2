@@ -38,7 +38,7 @@ typedef struct Player
     float raio;
     float firerate;
     int tiro;
-    float invicible;
+    bool invicible;
 }Player;
 
 typedef struct Inimigo    //********************************************************************************************************************
@@ -478,7 +478,7 @@ void UpdateGame(void){
     {
         for(int j = 0;j<MAX_TIROS;j++)
         {
-            if(atiradorinimigo[j].ativa && CheckCollisionCircles(atiradorinimigo[j].posicao,atiradorinimigo[j].raio,(Vector2){jogador.posicao.x+20,jogador.posicao.y+25},jogador.raio))
+            if(atiradorinimigo[j].ativa && CheckCollisionCircles(atiradorinimigo[j].posicao,atiradorinimigo[j].raio,(Vector2){jogador.posicao.x+20,jogador.posicao.y+25},jogador.raio) && !jogador.invicible)
             {
             
                 vida--;
