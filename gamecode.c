@@ -122,14 +122,14 @@ static Texture2D luacristal;
 static Texture2D Fundolua;
 static Texture2D enemi;
 static GAMESTATE gameState;
-static FILE* inimigo[20];
+static FILE* inimigo[32];
 static int numMusica = 0;
 static Musica musica[10];
 static Sound menu;
 static Sound Laser;
 static Sound triste;
 static Sound BGM;
-static Inimigo foe[20]={0};//struct inimigo declarada aqui
+static Inimigo foe[32]={0};//struct inimigo declarada aqui
 static int vida;
 static int iFrame;
 static int counter;
@@ -441,6 +441,133 @@ int wave3()
        
     return counter;
 }
+
+int wave4()
+{
+   for(int i=18;i<24;i++)
+    {
+        if(foe[i].ativo)
+        {
+            fscanf (inimigo[i], "%f %f\n",&foe[i].posicao.x,&foe[i].posicao.y);
+        }
+    }
+    for(int i=18;i<24;i++)
+    {   
+        if(foe[i].ativo)
+        {
+            DrawTexture(enemi,foe[i].posicao.x,foe[i].posicao.y,RAYWHITE);
+        
+        }
+    }
+    
+    
+    for(int i=18;i<24;i++)
+    {
+        if(foe[i].ativo)
+        {
+            foe[i].raio=20;
+        }
+    }
+
+    
+    for(int j=18;j<24;j++)
+    {
+        if(foe[j].ativo)
+        {
+                foe[j].chancedetiro=GetRandomValue(0,100);
+            if(foe[j].chancedetiro<=20)
+            {
+                foe[j].contador += 5;
+                
+                if(foe[j].contador == 20)
+                {
+                    
+                        
+                            for(int i = 0;i<MAX_TIROS;i++)
+                            {
+                                if(!atiradorinimigo[i].ativa)
+                                {
+                                    atiradorinimigo[i].posicao.x = foe[j].posicao.x + 20;
+                                    atiradorinimigo[i].posicao.y = foe[j].posicao.y + 16;
+                                    atiradorinimigo[i].ativa = true;
+                                    break;
+                                }
+                            }
+                        
+                        
+                    foe[j].contador = 0;
+                }
+            }
+        }
+        
+    }
+       
+    return counter; 
+}
+
+int wave5()
+{
+    for(int i=24;i<32;i++)
+    {
+        if(foe[i].ativo)
+        {
+            fscanf (inimigo[i], "%f %f\n",&foe[i].posicao.x,&foe[i].posicao.y);
+        }
+    }
+    for(int i=24;i<32;i++)
+    {   
+        if(foe[i].ativo)
+        {
+            DrawTexture(enemi,foe[i].posicao.x,foe[i].posicao.y,RAYWHITE);
+        
+        }
+    }
+    
+    
+    for(int i=24;i<32;i++)
+    {
+        if(foe[i].ativo)
+        {
+            foe[i].raio=20;
+        }
+    }
+
+    
+    for(int j=24;j<32;j++)
+    {
+        if(foe[j].ativo)
+        {
+                foe[j].chancedetiro=GetRandomValue(0,100);
+            if(foe[j].chancedetiro<=20)
+            {
+                foe[j].contador += 5;
+                
+                if(foe[j].contador == 20)
+                {
+                    
+                        
+                            for(int i = 0;i<MAX_TIROS;i++)
+                            {
+                                if(!atiradorinimigo[i].ativa)
+                                {
+                                    atiradorinimigo[i].posicao.x = foe[j].posicao.x + 20;
+                                    atiradorinimigo[i].posicao.y = foe[j].posicao.y + 16;
+                                    atiradorinimigo[i].ativa = true;
+                                    break;
+                                }
+                            }
+                        
+                        
+                    foe[j].contador = 0;
+                }
+            }
+        }
+        
+    }
+       
+    return counter; 
+}
+
 void Inicializa_jogador(void)
 {
     player.pos.x = 360;
@@ -468,7 +595,7 @@ void Inicializa_inimigo(void)
             foe[i].raio=20;
         }
     }
-     for(int i=0;i<19;i++)
+     for(int i=0;i<32;i++)
     {
         foe[i].vida = VIDAS_INIMIGO;  
     }
@@ -545,7 +672,7 @@ void UnloadGame(void){
         StopSound(musica[numMusica].mus);
         UnloadSound(musica[numMusica].mus);
     }
-    for(int i=0;i<11;i++)
+    for(int i=0;i<32;i++)
         {
             fclose(inimigo[i]);
         }
@@ -636,6 +763,20 @@ void UpdateFase2(void){
             foe[i].ativo = true;
         }
     }
+    if(counter == 18)
+    {
+        for(int i=18;i<24;i++)
+        {
+            foe[i].ativo = true;
+        }
+    }
+    if(counter == 24)
+    {
+        for(int i=24;i<32;i++)
+        {
+            foe[i].ativo = true;
+        }
+    }
     
     if(player.invincible)
     {
@@ -647,7 +788,7 @@ void UpdateFase2(void){
         }
     }
     
-     for(int i = 0;i<18;i++)
+     for(int i = 0;i<32;i++)
     {
         for(int j = 0;j<MAX_TIROS;j++)
         {
@@ -668,7 +809,7 @@ void UpdateFase2(void){
         }
     }
     
-    for(int i =0;i<18;i++)
+    for(int i =0;i<32;i++)
     {
         for(int j = 0;j<MAX_TIROS;j++)
         {
@@ -686,14 +827,14 @@ void UpdateFase2(void){
         }
     }   
         
-    for(int i=0;i<18;i++)
+    for(int i=0;i<32;i++)
     {
             if(foe[i].ativo && CheckCollisionCircles(player.pos,player.hitbox,foe[i].posicao,foe[i].raio) && !player.invincible)
          {
                 if (!vidainf){
                     vida--;
                 }
-                
+                counter++;
                 foe[i].ativo = false;
                 player.invincible = true;
                 
@@ -1130,11 +1271,11 @@ GAMESTATE Fase2(void) //fase2
     StopSound(BGM);
     //LoadArq();
     inimigo[0] = fopen ("/raylib/StarlightDrift/enemy/enemies.txt","r");
-    inimigo[1] = fopen ("/raylib/StarlightDrift/enemy/enemies.txt2","r");
-    inimigo[2] = fopen ("/raylib/StarlightDrift/enemy/enemies.txt3","r");
-    inimigo[3] = fopen ("/raylib/StarlightDrift/enemy/enemies.txt4","r");
-    inimigo[4] = fopen ("/raylib/StarlightDrift/enemy/enemies.txt5","r");
-    inimigo[5] = fopen ("/raylib/StarlightDrift/enemy/enemies.txt6","r");
+    inimigo[1] = fopen ("/raylib/StarlightDrift/enemy/enemies2.txt","r");
+    inimigo[2] = fopen ("/raylib/StarlightDrift/enemy/enemies3.txt","r");
+    inimigo[3] = fopen ("/raylib/StarlightDrift/enemy/enemies4.txt","r");
+    inimigo[4] = fopen ("/raylib/StarlightDrift/enemy/enemies5.txt","r");
+    inimigo[5] = fopen ("/raylib/StarlightDrift/enemy/enemies6.txt","r");
     inimigo[6] = fopen ("/raylib/StarlightDrift/enemy/padraoduplo1.txt","r");
     inimigo[7] = fopen ("/raylib/StarlightDrift/enemy/padraoduplo2.txt","r");
     inimigo[8] = fopen ("/raylib/StarlightDrift/enemy/padraolongo.txt","r");
@@ -1147,6 +1288,20 @@ GAMESTATE Fase2(void) //fase2
     inimigo[15] = fopen ("/raylib/StarlightDrift/enemy/wave3-5.txt","r");
     inimigo[16] = fopen ("/raylib/StarlightDrift/enemy/wave3-6.txt","r");
     inimigo[17] = fopen ("/raylib/StarlightDrift/enemy/wave3-7.txt","r");
+    inimigo[18] = fopen ("/raylib/StarlightDrift/enemy/enemies7.txt","r");
+    inimigo[19] = fopen ("/raylib/StarlightDrift/enemy/enemies8.txt","r");
+    inimigo[20] = fopen ("/raylib/StarlightDrift/enemy/enemies9.txt","r");
+    inimigo[21] = fopen ("/raylib/StarlightDrift/enemy/enemies10.txt","r");
+    inimigo[22] = fopen ("/raylib/StarlightDrift/enemy/enemies11.txt","r");
+    inimigo[23] = fopen ("/raylib/StarlightDrift/enemy/enemies12.txt","r");
+    inimigo[24] = fopen ("/raylib/StarlightDrift/enemy/wave5-1.txt","r");
+    inimigo[25] = fopen ("/raylib/StarlightDrift/enemy/wave5-2.txt","r");
+    inimigo[26] = fopen ("/raylib/StarlightDrift/enemy/wave5-3.txt","r");
+    inimigo[27] = fopen ("/raylib/StarlightDrift/enemy/wave5-4.txt","r");
+    inimigo[28] = fopen ("/raylib/StarlightDrift/enemy/wave5-5.txt","r");
+    inimigo[29] = fopen ("/raylib/StarlightDrift/enemy/wave5-6.txt","r");
+    inimigo[30] = fopen ("/raylib/StarlightDrift/enemy/wave5-7.txt","r");
+    inimigo[31] = fopen ("/raylib/StarlightDrift/enemy/wave5-8.txt","r");
     
     
     while(1)
@@ -1175,6 +1330,10 @@ GAMESTATE Fase2(void) //fase2
             if (alpha >= 1)
             {
                 counter = 0;
+                for(int i=0;i<32;i++)
+                {
+                    foe[i].ativo = false;
+                }
                 alpha = 1.0f;
                 return MENU;
             }
@@ -1193,8 +1352,15 @@ GAMESTATE Fase2(void) //fase2
             {
                 if(wave3() >= 17)
                 {   
-                    fase++;    
-                    return JOGO;
+                    if(wave4() >=24)
+                    {
+                        if(wave5() >= 32)
+                        {
+                            fase++;    
+                            return JOGO;
+                        }
+                    }
+                    
                 }
             }
         }
@@ -1205,6 +1371,10 @@ GAMESTATE Fase2(void) //fase2
         if(vida <= 0)
         {
          counter = 0;
+         for(int i=0;i<32;i++)
+         {
+             foe[i].ativo = false;
+         }
           return MORTE;
         }
         
@@ -1968,4 +2138,3 @@ GAMESTATE MenuScreen(void)
         EndDrawing();
     }
 }
- 
