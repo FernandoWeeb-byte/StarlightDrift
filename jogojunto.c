@@ -431,7 +431,7 @@ void Inicializa_jogador(void)
 {
     player.pos.x = 360;
     player.pos.y = 700;
-    player.spd = 8;
+    player.spd = 5;
     player.color = BLUE;
     player.firerate = 0;
     player.hitbox = 9;
@@ -465,8 +465,9 @@ void InitGame(void){
     InitMusic();
     
     Image NaveImg = LoadImage("/raylib/StarlightDrift/texture/nave.png");
+    Laser = LoadSound("/raylib/StarlightDrift/sounds/laser.ogg");
     
-    ImageResize(&NaveImg,40,50);
+    ImageResize(&NaveImg,50,60);
    
     Nave = LoadTextureFromImage(NaveImg);
     
@@ -500,9 +501,9 @@ void Inicializa_tiro(void)
         player.bullet[i].pos.x = player.pos.x;
         player.bullet[i].pos.y = player.pos.y + 8;
         player.bullet[i].spd = 10;
-        player.bullet[i].raio = 3;
+        player.bullet[i].raio = 5;
         player.bullet[i].active = false;
-        player.bullet[i].cor = ORANGE;
+        player.bullet[i].cor = BLUE;
     }
     
     for(int i = 0;i<MAX_TIROS;i++)
@@ -638,8 +639,7 @@ void DrawFase2(void){
     {
         if(player.bullet[i].active)
         {
-            player.bullet[i].pos.y -= player.bullet[i].spd;
-            DrawCircle(player.bullet[i].pos.x,player.bullet[i].pos.y,3,player.bullet[i].cor);
+            DrawCircle(player.bullet[i].pos.x,player.bullet[i].pos.y,player.bullet[i].raio,player.bullet[i].cor);
         }
         if(player.bullet[i].pos.y <=0)
         {
@@ -674,7 +674,14 @@ void Atirar(void)
             if(player.bullet[i].active == false)
             {
                 player.bullet[i].active = true;
-                player.bullet[i].pos.x = player.pos.x;
+                if(fase == 1)
+                {
+                    player.bullet[i].pos.x = player.pos.x;
+                }
+                else if (fase == 2)
+                {
+                    player.bullet[i].pos.x = player.pos.x + 20;
+                }
                 player.bullet[i].pos.y = player.pos.y;
                 break;
             }
