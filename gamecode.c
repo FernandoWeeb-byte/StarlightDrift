@@ -28,6 +28,13 @@ typedef struct Musica{
     bool ativa;
 }Musica;
 
+typedef struct Boss{
+Rectangle boss;
+int vidas;    
+Color cor;
+Vector2 vel;
+}Boss;
+
 typedef struct Tiro
 {
     Vector2 posicao;
@@ -142,6 +149,8 @@ static LIGHT light;
 static Tiro atiradorinimigo[MAX_TIROS];
 //static Music musicas;
 static float vol = 1;
+static Boss PERICLES;
+static Rectangle barradevida[3];//lembrar de colocar diferentes cores depois 
 
 
 //-------------------------------------
@@ -164,11 +173,15 @@ static GAMESTATE Ops(void);          //Opções
 static GAMESTATE morte(void);
 static GAMESTATE Fase1(void);
 static GAMESTATE Fase2(void);
+static GAMESTATE Fase3(void);
 static void InitFase1(void);
 static void UpdateFase1(void);
 static void DrawFase1(void);
 static void UpdateFase2(void);   //Atualiza a matematica do frame
 static void DrawFase2(void);
+static void InitFase3(void);
+static void UpdateFase3(void);
+static void DrawFase3(void);
 static void LightBarrier(float mult);
 static void Atirar(void); //
 static void TiroInimigo(void);//tentativa de fzr o tiro do inimigo
@@ -207,6 +220,10 @@ int main(void)
                 else if (fase == 2)
                 {
                     gameState = Fase2();
+                }
+                else if (fase == 3)
+                {
+                    gameState = Fase3();
                 }
                 UnloadGame();
             break;
@@ -249,7 +266,7 @@ void InitMenu(void)
     UnloadImage(FFXVdecristal);
     UnloadImage(fundodecristal);
     UnloadImage(luadecristal);
-    
+    fase = 1;
 }
 
 void UnloadMenu(void)
@@ -481,6 +498,7 @@ void InitGame(void){
     skatk=false;
     //skbv=false;
     //skbd=false;
+    
     
     
     UnloadImage(NaveImg);
@@ -743,7 +761,7 @@ void Atirar(void)
             if(player.bullet[i].active == false)
             {
                 player.bullet[i].active = true;
-                if(fase == 1)
+                if(fase == 1 || fase == 3)
                 {
                     player.bullet[i].pos.x = player.pos.x;
                 }
@@ -1175,8 +1193,8 @@ GAMESTATE Fase2(void) //fase2
             {
                 if(wave3() >= 17)
                 {   
-                    
-                    
+                    fase++;    
+                    return JOGO;
                 }
             }
         }
@@ -1193,6 +1211,53 @@ GAMESTATE Fase2(void) //fase2
     }   
    
    
+}
+
+GAMESTATE Fase3(void) //fase3
+{
+    InitFase3();
+    float alpha = 1.0f;
+    bool FadeIn = true;
+    bool FadeOut = false;
+    skillpoints+=1;
+        while(1)
+        {
+            if(IsKeyPressed(KEY_F1)){
+            Cheats();
+        }
+        if(IsKeyPressed('M'))
+        {  FadeOut = true;
+           
+        }
+        if(IsKeyPressed('P'))
+            Pause();
+        if(FadeIn)
+        {
+            alpha -= 0.01f;
+            if(alpha<=0)
+            {
+                alpha = 0;
+                FadeIn = false;
+            }
+        } else
+        if(FadeOut)
+        {
+            alpha += 0.01f;
+            if (alpha >= 1)
+            {
+                counter = 0;
+                alpha = 1.0f;
+                return MENU;
+            }
+        }
+            
+            
+            UpdateFase3();
+            
+            BeginDrawing();
+            DrawFase3();
+            EndDrawing();
+        }
 }
 
 GAMESTATE Ops(void)
@@ -1600,6 +1665,71 @@ void InitFase1(void)
     light.Rec.x = 0;
     light.Rec.width = Largura_Tela;
     light.active = false;
+}
+
+void InitFase3(void)
+{
+PERICLES.boss.height = 20;
+PERICLES.boss.width = 20;
+PERICLES.boss.x = 360;
+PERICLES.boss.y = 50;
+PERICLES.cor = WHITE;
+PERICLES.vel.x = 10;
+PERICLES.vel.y = 10;
+    for(int i = 0;i<3;i++)
+    {
+        barradevida[i].width = 720;
+        barradevida[i].height = 10;
+        barradevida[i].x = 0;
+        barradevida[i].y = 0;
+    }
+}
+
+void UpdateFase3(void)
+{
+    movbackground += 3.0; //velocidade do background
+    if(movbackground >= fundo.height) {
+        movbackground = 0; //looping do background
+    }
+    
+    Movimento();
+    Atirar();
+    PERICLES.boss.x+=PERICLES.vel.x;
+    if(PERICLES.boss.x>=700)
+        PERICLES.vel.x = -PERICLES.vel.x;
+    if(PERICLES.boss.x<=30)
+        PERICLES.vel.x = -PERICLES.vel.x;
+}
+
+void DrawFase3(void)
+{
+    ClearBackground(BLACK);
+        DrawTexture(FundoSpace, 0, backgroundScroll, RAYWHITE);
+        DrawTexture(FundoSpace, 0, backgroundScroll - FundoSpace.height, RAYWHITE);
+        if(!player.invincible)
+        {
+            DrawTexture(Nave, player.pos.x - Nave.width/2, player.pos.y - Nave.height/2, RAYWHITE);
+        } else 
+        {
+            if(iFrame%3 == 0 || iFrame%4 == 0)
+            {
+                DrawTexture(Nave, player.pos.x - Nave.width/2, player.pos.y - Nave.height/2, RAYWHITE);
+            }
+        }
+        //DrawCircle(player.pos.x, player.pos.y, player.hitbox, PINK);
+        
+        for(int i=0; i<MAX_TIROS; i++)
+        {
+            if(player.bullet[i].active)
+            {
+                DrawCircleV(player.bullet[i].pos, player.bullet[i].raio, BLUE);
+            }
+        }
+        DrawRectangleRec(PERICLES.boss,PERICLES.cor);
+        DrawRectangleRec(barradevida[0],RED);
+        DrawRectangleRec(barradevida[1],YELLOW);
+        DrawRectangleRec(barradevida[2],GRAY);
+        DrawText(TextFormat("VIDAS:%i",vida),0,12,20,WHITE);
 }
 
 void LightBarrier(float mult)
