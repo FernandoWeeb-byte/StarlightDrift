@@ -909,6 +909,7 @@ void InitMusic(void){
         musica[i].ativa=false;
     }
     numMusica=2;
+    musica[numMusica].mus=LoadSound("/raylib/StarlightDrift/sounds/Hatsune Miku - Melt PV.mp3");
 }
 void ChoiceMusic(void){
     if (musica[numMusica].ativa){
@@ -954,13 +955,13 @@ void ChoiceMusic(void){
         }
     }
     else{
-        numMusica=GetRandomValue(1,2);
+        numMusica=GetRandomValue(0,1);
         switch (numMusica){
             case 1:
             musica[numMusica].mus=LoadSound("/raylib/StarlightDrift/sounds/UDR Bonde de Orgia De Traveco original.mp3");
             musica[numMusica].ativa=true;
             break;
-            case 2:
+            case 0:
             musica[numMusica].mus=LoadSound("/raylib/StarlightDrift/sounds/Chico Melancia  Vamos jogar domino !!!.mp3");
             musica[numMusica].ativa=true;
             break;
@@ -1037,7 +1038,9 @@ GAMESTATE Fase1(void) //fase1
     
     while(1)
     {
-        
+        if(IsKeyPressed(KEY_F1)){
+            Cheats();
+        }
         if(IsKeyPressed('M'))
         {  
             gameOver = true;
@@ -1077,9 +1080,6 @@ GAMESTATE Fase1(void) //fase1
         if(!gameOver)
         {
             BeginDrawing();
-            if(IsKeyPressed(KEY_F1)){
-                Cheats();
-            }
             UpdateFase1();
             DrawFase1();
             DrawRectangle(0, 0, Largura_Tela, Altura_Tela, Fade(BLACK, alpha));
@@ -1133,7 +1133,9 @@ GAMESTATE Fase2(void) //fase2
     
     while(1)
     {
-        
+        if(IsKeyPressed(KEY_F1)){
+            Cheats();
+        }
         if(IsKeyPressed('M'))
         {  FadeOut = true;
            
@@ -1163,9 +1165,7 @@ GAMESTATE Fase2(void) //fase2
         
         UpdateFase2();
         BeginDrawing();
-        if(IsKeyPressed(KEY_F1)){
-            Cheats();
-        }
+        
         DrawFase2();
         //Wave1();
         if(Wave1() >= 6)
