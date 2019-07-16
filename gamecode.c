@@ -130,8 +130,12 @@ static bool skvel;
 static bool skatk;
 //static bool skbv;
 //static bool skbd;
+static bool vidainf=false;
+static bool goodmusic=false;
 static int fase = 1;
-
+static int actx=0;
+static int acty=0;
+static int actz=0;
 static Player player;
 static METEOR meteoros[MAX_METEOROS];
 static LIGHT light;
@@ -168,6 +172,7 @@ static void DrawFase2(void);
 static void LightBarrier(float mult);
 static void Atirar(void); //
 static void TiroInimigo(void);//tentativa de fzr o tiro do inimigo
+static void Cheats(void);
 //static void LoadArq(void); //loada os arq
 //static void Wave1(FILE* lado1,FILE* lado2); //wave de teste
 //static void UnloadArq(void);//unloada arq
@@ -476,7 +481,7 @@ void InitGame(void){
     skatk=false;
     //skbv=false;
     //skbd=false;
-    skillpoints=0;
+    
     
     UnloadImage(NaveImg);
 }
@@ -528,8 +533,67 @@ void UnloadGame(void){
         }
 
 }
+void Cheats(void){
+    
+    while(1){
+
+            if (IsKeyPressed(KEY_ONE)){
+                actx++;
+            }
+            if(actx>1){
+                actx=0;
+            }
+            if (IsKeyPressed(KEY_TWO)){
+                acty++;
+            }
+            if(acty>1){
+                acty=0;
+            }
+            if (IsKeyPressed(KEY_THREE)){
+                actz++;
+            }
+            if (actz>1){
+                actz=0;
+            }
+            BeginDrawing();
+            ClearBackground(BLACK);
+            DrawText("CHEATS",250,10,50,RED);
+            DrawText("um lugar q vc prova q vc é ruim e n consegue passar de fase, seu merda",100,70,15,RED);
+          
+          
+            if (actx){
+                vidainf=true;
+                DrawText("1 - Vidas infinitas",30,140,30,GREEN);
+            }
+            else{
+                
+                DrawText("1 - Vidas infinitas",30,140,30,WHITE);
+            }
+            if (acty){
+                goodmusic=true;
+                DrawText("2 - Música melhora em 304954.3%",30,180,30,GREEN);
+            }
+            else{
+                DrawText("2 - Música melhora em 304954.3%",30,180,30,WHITE);
+            }
+            if (actz){
+                skillpoints=500;
+                DrawText("3 - SkillPoints p carai",30,220,30,GREEN);
+            }
+            else{
+                DrawText("3 - SkillPoints p carai",30,220,30,WHITE);
+            }
+            
+            
+            
+            EndDrawing();
+            if(IsKeyPressed(KEY_F1)){
+                break;
+            }
+    }
+}
 void UpdateFase2(void){
-    if(!musica[numMusica].ativa){
+    if(!IsSoundPlaying(musica[numMusica].mus)){
         ChoiceMusic();
     }
     movbackground += 3.0; //velocidade do background
@@ -592,8 +656,10 @@ void UpdateFase2(void){
         {
                 if(atiradorinimigo[j].ativa && CheckCollisionCircles(atiradorinimigo[j].posicao,atiradorinimigo[j].raio,(Vector2){player.pos.x+20,player.pos.y+25},player.hitbox) && !player.invincible)
             {
-            
-                vida--;
+                if (!vidainf){
+                    vida--;
+                }
+                
                 atiradorinimigo[j].ativa=false;
                 player.invincible = true;
                     
@@ -606,7 +672,10 @@ void UpdateFase2(void){
     {
             if(foe[i].ativo && CheckCollisionCircles(player.pos,player.hitbox,foe[i].posicao,foe[i].raio) && !player.invincible)
          {
-                vida--;
+                if (!vidainf){
+                    vida--;
+                }
+                
                 foe[i].ativo = false;
                 player.invincible = true;
                 
@@ -844,42 +913,59 @@ void InitMusic(void){
 void ChoiceMusic(void){
     if (musica[numMusica].ativa){
         UnloadSound(musica[numMusica].mus);
+        musica[numMusica].ativa=false;
     }
-    numMusica=GetRandomValue(2,9);
-    switch (numMusica){
-        case 2:
-        musica[numMusica].mus=LoadSound("/raylib/StarlightDrift/sounds/Hatsune Miku - Melt PV.mp3");
-        musica[numMusica].ativa=true;
-        break;
-        case 3:
-        musica[numMusica].mus=LoadSound("/raylib/StarlightDrift/sounds/One Punch Man - Official Opening - The Hero!! Set Fire to the Furious Fist.mp3");
-        musica[numMusica].ativa=true;
-        break;
-        case 4:
-        musica[numMusica].mus=LoadSound("/raylib/StarlightDrift/sounds/Dragon Ball Super OST - Ka Ka Kachi Daze  LYRICS  ULTRA INSTINCT THEME.mp3");
-        musica[numMusica].ativa=true;
-        break;
-        case 5:
-        musica[numMusica].mus=LoadSound("/raylib/StarlightDrift/sounds/Death Note Opening 1 completo full HD.mp3");
-        musica[numMusica].ativa=true;
-        break;
-        case 6:
-        musica[numMusica].mus=LoadSound("/raylib/StarlightDrift/sounds/Chopin  Etude No.2 in A minor Op10-2 on guitar.mp3");
-        musica[numMusica].ativa=true;
-        break;
-        case 7:
-        musica[numMusica].mus=LoadSound("/raylib/StarlightDrift/sounds/10 - Faraway 380,000-Kilometer Voyage.mp3");
-        musica[numMusica].ativa=true;
-        break;
-        case 8:
-        musica[numMusica].mus=LoadSound("/raylib/StarlightDrift/sounds/01 - The Space Shrine Maiden Appears.mp3");
-        musica[numMusica].ativa=true;
-        break;
-        case 9:
-        musica[numMusica].mus=LoadSound("/raylib/StarlightDrift/sounds/07 - Eternal Spring Dream.mp3");
-        musica[numMusica].ativa=true;
-        break;
-        
+    if(!goodmusic){
+        numMusica=GetRandomValue(2,9);
+        switch (numMusica){
+            case 2:
+            musica[numMusica].mus=LoadSound("/raylib/StarlightDrift/sounds/Hatsune Miku - Melt PV.mp3");
+            musica[numMusica].ativa=true;
+            break;
+            case 3:
+            musica[numMusica].mus=LoadSound("/raylib/StarlightDrift/sounds/One Punch Man - Official Opening - The Hero!! Set Fire to the Furious Fist.mp3");
+            musica[numMusica].ativa=true;
+            break;
+            case 4:
+            musica[numMusica].mus=LoadSound("/raylib/StarlightDrift/sounds/Dragon Ball Super OST - Ka Ka Kachi Daze  LYRICS  ULTRA INSTINCT THEME.mp3");
+            musica[numMusica].ativa=true;
+            break;
+            case 5:
+            musica[numMusica].mus=LoadSound("/raylib/StarlightDrift/sounds/Death Note Opening 1 completo full HD.mp3");
+            musica[numMusica].ativa=true;
+            break;
+            case 6:
+            musica[numMusica].mus=LoadSound("/raylib/StarlightDrift/sounds/Chopin  Etude No.2 in A minor Op10-2 on guitar.mp3");
+            musica[numMusica].ativa=true;
+            break;
+            case 7:
+            musica[numMusica].mus=LoadSound("/raylib/StarlightDrift/sounds/10 - Faraway 380,000-Kilometer Voyage.mp3");
+            musica[numMusica].ativa=true;
+            break;
+            case 8:
+            musica[numMusica].mus=LoadSound("/raylib/StarlightDrift/sounds/01 - The Space Shrine Maiden Appears.mp3");
+            musica[numMusica].ativa=true;
+            break;
+            case 9:
+            musica[numMusica].mus=LoadSound("/raylib/StarlightDrift/sounds/07 - Eternal Spring Dream.mp3");
+            musica[numMusica].ativa=true;
+            break;
+            
+        }
+    }
+    else{
+        numMusica=GetRandomValue(1,2);
+        switch (numMusica){
+            case 1:
+            musica[numMusica].mus=LoadSound("/raylib/StarlightDrift/sounds/UDR Bonde de Orgia De Traveco original.mp3");
+            musica[numMusica].ativa=true;
+            break;
+            case 2:
+            musica[numMusica].mus=LoadSound("/raylib/StarlightDrift/sounds/Chico Melancia  Vamos jogar domino !!!.mp3");
+            musica[numMusica].ativa=true;
+            break;
+            
+        }
     }
     PlaySound(musica[numMusica].mus);
 }
@@ -944,13 +1030,14 @@ GAMESTATE Fase1(void) //fase1
     float alpha = 1.0f;
     bool FadeIn = true;
     bool FadeOut = false;
-    skillpoints++;
+    skillpoints+=1;
     SetMasterVolume(0.25);
     
     InitFase1();
     
     while(1)
     {
+        
         if(IsKeyPressed('M'))
         {  
             gameOver = true;
@@ -990,6 +1077,9 @@ GAMESTATE Fase1(void) //fase1
         if(!gameOver)
         {
             BeginDrawing();
+            if(IsKeyPressed(KEY_F1)){
+                Cheats();
+            }
             UpdateFase1();
             DrawFase1();
             DrawRectangle(0, 0, Largura_Tela, Altura_Tela, Fade(BLACK, alpha));
@@ -1018,7 +1108,8 @@ GAMESTATE Fase2(void) //fase2
     float alpha = 1.0f;
     bool FadeIn = true;
     bool FadeOut = false;
-    skillpoints++;
+    skillpoints+=1;
+    StopSound(BGM);
     //LoadArq();
     inimigo[0] = fopen ("/raylib/StarlightDrift/enemy/enemies.txt","r");
     inimigo[1] = fopen ("/raylib/StarlightDrift/enemy/enemies.txt2","r");
@@ -1042,6 +1133,7 @@ GAMESTATE Fase2(void) //fase2
     
     while(1)
     {
+        
         if(IsKeyPressed('M'))
         {  FadeOut = true;
            
@@ -1071,6 +1163,9 @@ GAMESTATE Fase2(void) //fase2
         
         UpdateFase2();
         BeginDrawing();
+        if(IsKeyPressed(KEY_F1)){
+            Cheats();
+        }
         DrawFase2();
         //Wave1();
         if(Wave1() >= 6)
@@ -1165,6 +1260,7 @@ GAMESTATE Ops(void)
 GAMESTATE morte(void)
 {
     //triste = LoadSound("/raylib/StarlightDrift/sounds/naruto.mp3");
+    skillpoints=0;
     bool fade = false;
     bool fadein = true;
     Rectangle recsair = {415, 620, 85, 25};
@@ -1399,7 +1495,9 @@ void UpdateFase1(void)
             
             if(CheckCollisionCircles(player.pos, player.hitbox, meteoros[i].pos, meteoros[i].rad) && !player.invincible)
             {
-                lives--;
+                if (!vidainf){
+                    lives--;
+                }
                 if(lives<=0)
                 {
                     gameOver = true;
@@ -1569,7 +1667,9 @@ void LightBarrier(float mult)
         
         if(CheckCollisionCircleRec(player.pos, player.hitbox, light.Rec) && light.active && ColorToInt(player.color) != ColorToInt(light.color) && !player.invincible && cancolide)
         {
-            lives--;
+            if (!vidainf){
+                lives--;
+            }
             cancolide = false;
             if(lives <=0)
             {
@@ -1628,6 +1728,7 @@ GAMESTATE MenuScreen(void)
     -------------------------------------------------------------------------------------*/
     
     //Estado inicial das variaveis do menu
+    skillpoints=0;
     bool fade = false;
     bool fadeIn = true;
     Rectangle BordaFundo = {0, 0, Largura_Tela, Altura_Tela};
