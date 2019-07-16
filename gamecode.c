@@ -98,19 +98,15 @@ static const int Largura_Tela = 720;
 static const int Altura_Tela = 876;
 static bool gameOver = false;
 static bool gaming = true;
-static bool pause = false;
 static int LightCounter = 0;
 static float backgroundScroll = 0;
 static int lives = 3;
 static int iFrame = 0;
 static int firerate = 5;
 static int corshield = 1;
-
-static Rectangle background;
 static float movbackground;
 static Texture2D Nave;
 static Texture2D fundo;
-static Texture2D FundodeFernando;
 static Texture2D FFXV;
 static Texture2D Meteoro;
 static Texture2D FundoSpace;
@@ -144,10 +140,6 @@ static float vol = 1;
 //Funcoes Modulares Locais
 //-------------------------------------
 static void InitMovBackground(void);
-
-static int Level1(int Vidas);       //Level1 
-static int Level2(int Vidas);       //Level2 
-static int Level3(int Vidas);       //Level3
 static void ChoiceMusic(void);
 static void InitMusic(void);
 static void InitGame(void);     //Iniciar o jogo
@@ -157,9 +149,7 @@ static void Inicializa_tiro(void);
 static void Inicializa_jogador(void);
 static void InitMenu(void);     //Iniciar arquivos do menu 
 static void UnloadMenu(void);   //Descarregar arquivos do menu
-static void Pause(void);    //pausa o jogo 
-static GAMESTATE LevelSelect(void);      //Escolhe a fase
-static GAMESTATE Jogo(void);
+static void Pause(void);    //pausa o jogo ;
 static GAMESTATE MenuScreen(void);   //Menu inicial
 static GAMESTATE Creditos(void);     //Creditos
 static GAMESTATE Ops(void);          //Opções
@@ -169,9 +159,7 @@ static GAMESTATE Fase2(void);
 static void InitFase1(void);
 static void UpdateFase1(void);
 static void DrawFase1(void);
-static void UpdateGame(void);
 static void UpdateFase2(void);   //Atualiza a matematica do frame
-static void DrawGame(void);     //Desenha o frame
 static void DrawFase2(void);
 static void LightBarrier(float mult);
 static void Atirar(void); //
@@ -767,33 +755,7 @@ void TiroInimigo(void)
             
 }
 
-int Level1(int Vidas){
-    while (!gameOver){
-        UpdateGame();
-        DrawGame();
-    }
-    return Vidas;
-}
 
-int Level2(int Vidas){
-    while (!gameOver){
-        UpdateGame();
-        DrawGame();
-        
-        
-    }
-    return Vidas;
-}
-
-int Level3(int Vidas){
-    while (!gameOver){
-        UpdateGame();
-        DrawGame();
-        
-        
-    }
-    return Vidas;
-}
 void Pause(void)
 {   
    
@@ -855,6 +817,7 @@ void ChoiceMusic(void){
         musica[numMusica].mus=LoadSound("/raylib/StarlightDrift/sounds/07 - Eternal Spring Dream.mp3");
         musica[numMusica].ativa=true;
         break;
+        
     }
     PlaySound(musica[numMusica].mus);
 }
@@ -873,7 +836,7 @@ GAMESTATE Creditos(void)
     
     char texto[] = "Game Developers:\nJoão Victor Galdino\nJosé Rodrigues Neto\nLucas Fernandes Lins\nLuiz Fernando Barbosa\nMatheus Felipe Lima\n\nThis game was developed as a test for the introduction programming class by students of the Rural Federal University of Pernambuco (UFRPE) with the supervision of Professor Péricles Miranda\n\nThis game is not meant to be commercialized in any way whatsoever. We DO NOT own any of the images or sounds used in this game. Any similarities between the events portraited in this game and the real world are purely coincidental.\n\nSpecial Thanks to @raysan5, creator of Raylib\n\nSpecial Thanks to the coffee that was converted into this game's lines of code\n\n\nHomem Negro Fodase.";
     
-    while(!WindowShouldClose())
+    while(1)
     {
     PosicaoMouse = GetMousePosition();
     if(FadeIn)
@@ -924,7 +887,7 @@ GAMESTATE Fase1(void)
     
     InitFase1();
     
-    while(!WindowShouldClose())
+    while(1)
     {
         if(IsKeyPressed('M'))
         {  
@@ -1062,18 +1025,18 @@ GAMESTATE Fase2(void)
         }
         DrawRectangle(0, 0, Largura_Tela, Altura_Tela, Fade(BLACK, alpha));
         EndDrawing();
-        
+        // UnloadArq();
+        for(int i=0;i<11;i++)
+        {
+            fclose(inimigo[i]);
+        }
         if(vida <= 0)
         {
          counter = 0;
           return MORTE;
         }
     }   
-   // UnloadArq();
-    for(int i=0;i<11;i++)
-    {
-        fclose(inimigo[i]);
-    }
+   
    
 }
 
