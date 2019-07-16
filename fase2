@@ -59,7 +59,7 @@ typedef struct Inimigo    //****************************************************
 //Variaveis Globais
 //-------------------------------------
 static const int Largura_Tela = 720;
-static const int Altura_Tela = 876;
+static const int Altura_Tela = 756;
 static bool gameOver = false;
 static bool pause = false;
 
@@ -73,13 +73,13 @@ static Texture2D luacristal;
 static Texture2D Fundolua;
 static Texture2D enemi;
 static GAMESTATE gameState;
-static FILE* inimigo[20];
+static FILE* inimigo[30];
 static int numMusica=0;
 static Musica musica[10];
 static Sound menu;
 static Sound Laser;
 static Sound triste;
-static Inimigo foe[20]={0};//struct inimigo declarada aqui
+static Inimigo foe[30]={0};//struct inimigo declarada aqui
 static bool foebool[20];
 static int vida;
 static int iFrame;
@@ -199,16 +199,7 @@ void UnloadMenu(void)
     UnloadTexture(Fundolua);
 }
 
-/*void LoadArq(void)
-{
-    FILE* lado1 = fopen ("/raylib/StarlightDrift/enemy/enemies.txt","r");
-    FILE* lado2 = fopen ("/raylib/StarlightDrift/enemy/padrao2.txt","r");
-}
-void UnloadArq(void)
-{
-    fclose(lado1);
-    fclose(lado2);
-}*/
+
 int Wave1()
 {
     
@@ -364,6 +355,70 @@ int wave3()
        
     return counter;
 }
+
+int wave4()
+{
+   for(int i=18;i<24;i++)
+    {
+        if(foe[i].ativo)
+        {
+            fscanf (inimigo[i], "%f %f\n",&foe[i].posicao.x,&foe[i].posicao.y);
+        }
+    }
+    for(int i=18;i<24;i++)
+    {   
+        if(foe[i].ativo)
+        {
+            DrawTexture(enemi,foe[i].posicao.x,foe[i].posicao.y,RAYWHITE);
+        
+        }
+    }
+    
+    
+    for(int i=18;i<24;i++)
+    {
+        if(foe[i].ativo)
+        {
+            foe[i].raio=20;
+        }
+    }
+
+    
+    for(int j=18;j<24;j++)
+    {
+        if(foe[j].ativo)
+        {
+                foe[j].chancedetiro=GetRandomValue(0,100);
+            if(foe[j].chancedetiro<=20)
+            {
+                foe[j].contador += 5;
+                
+                if(foe[j].contador == 20)
+                {
+                    
+                        
+                            for(int i = 0;i<MAX_TIROS;i++)
+                            {
+                                if(!atiradorinimigo[i].ativa)
+                                {
+                                    atiradorinimigo[i].posicao.x = foe[j].posicao.x + 20;
+                                    atiradorinimigo[i].posicao.y = foe[j].posicao.y + 16;
+                                    atiradorinimigo[i].ativa = true;
+                                    break;
+                                }
+                            }
+                        
+                        
+                    foe[j].contador = 0;
+                }
+            }
+        }
+        
+    }
+       
+    return counter; 
+}
+
 void Inicializa_jogador(void)
 {
     jogador.posicao.x = 360;
@@ -391,7 +446,7 @@ void Inicializa_inimigo(void)
             foe[i].raio=20;
         }
     }
-     for(int i=0;i<19;i++)
+     for(int i=0;i<24;i++)
     {
         foe[i].vida = VIDAS_INIMIGO;  
     }
@@ -492,6 +547,14 @@ void UpdateGame(void){
         }
     }
     
+    if(counter == 18)
+    {
+        for(int i=18;i<24;i++)
+        {
+            foe[i].ativo = true;
+        }
+    }
+    
     if(jogador.invicible)
     {
         iFrame++;
@@ -502,7 +565,7 @@ void UpdateGame(void){
         }
     }
     
-     for(int i = 0;i<18;i++)
+     for(int i = 0;i<24;i++)
     {
         for(int j = 0;j<MAX_TIROS;j++)
         {
@@ -523,7 +586,7 @@ void UpdateGame(void){
         }
     }
     
-    for(int i =0;i<18;i++)
+    for(int i =0;i<24;i++)
     {
         for(int j = 0;j<MAX_TIROS;j++)
         {
@@ -539,12 +602,13 @@ void UpdateGame(void){
         }
     }   
         
-    for(int i=0;i<18;i++)
+    for(int i=0;i<24;i++)
     {
             if(foe[i].ativo && CheckCollisionCircles(jogador.posicao,jogador.raio,foe[i].posicao,foe[i].raio) && !jogador.invicible)
          {
                 vida--;
                 foe[i].ativo = false;
+                counter++;
                 jogador.invicible = true;
                 
                 
@@ -829,11 +893,11 @@ GAMESTATE Jogo(void)
     
     //LoadArq();
     inimigo[0] = fopen ("/raylib/StarlightDrift/enemy/enemies.txt","r");
-    inimigo[1] = fopen ("/raylib/StarlightDrift/enemy/enemies.txt2","r");
-    inimigo[2] = fopen ("/raylib/StarlightDrift/enemy/enemies.txt3","r");
-    inimigo[3] = fopen ("/raylib/StarlightDrift/enemy/enemies.txt4","r");
-    inimigo[4] = fopen ("/raylib/StarlightDrift/enemy/enemies.txt5","r");
-    inimigo[5] = fopen ("/raylib/StarlightDrift/enemy/enemies.txt6","r");
+    inimigo[1] = fopen ("/raylib/StarlightDrift/enemy/enemies2.txt","r");
+    inimigo[2] = fopen ("/raylib/StarlightDrift/enemy/enemies3.txt","r");
+    inimigo[3] = fopen ("/raylib/StarlightDrift/enemy/enemies4.txt","r");
+    inimigo[4] = fopen ("/raylib/StarlightDrift/enemy/enemies5.txt","r");
+    inimigo[5] = fopen ("/raylib/StarlightDrift/enemy/enemies6.txt","r");
     inimigo[6] = fopen ("/raylib/StarlightDrift/enemy/padraoduplo1.txt","r");
     inimigo[7] = fopen ("/raylib/StarlightDrift/enemy/padraoduplo2.txt","r");
     inimigo[8] = fopen ("/raylib/StarlightDrift/enemy/padraolongo.txt","r");
@@ -846,6 +910,12 @@ GAMESTATE Jogo(void)
     inimigo[15] = fopen ("/raylib/StarlightDrift/enemy/wave3-5.txt","r");
     inimigo[16] = fopen ("/raylib/StarlightDrift/enemy/wave3-6.txt","r");
     inimigo[17] = fopen ("/raylib/StarlightDrift/enemy/wave3-7.txt","r");
+    inimigo[18] = fopen ("/raylib/StarlightDrift/enemy/enemies7.txt","r");
+    inimigo[19] = fopen ("/raylib/StarlightDrift/enemy/enemies8.txt","r");
+    inimigo[20] = fopen ("/raylib/StarlightDrift/enemy/enemies9.txt","r");
+    inimigo[21] = fopen ("/raylib/StarlightDrift/enemy/enemies10.txt","r");
+    inimigo[22] = fopen ("/raylib/StarlightDrift/enemy/enemies11.txt","r");
+    inimigo[23] = fopen ("/raylib/StarlightDrift/enemy/enemies12.txt","r");
     
     
     while(1)
@@ -880,7 +950,7 @@ GAMESTATE Jogo(void)
         UpdateGame();
         BeginDrawing();
         DrawGame();
-        //Wave1();
+        
         if(Wave1() >= 6)
         {
             
@@ -889,6 +959,7 @@ GAMESTATE Jogo(void)
                 if(wave3() >= 17)
                 {   
                     
+                    wave4();
                     
                 }
             }
@@ -899,11 +970,15 @@ GAMESTATE Jogo(void)
         if(vida <= 0)
         {
          counter = 0;
+         for(int i=0;i<24;i++)
+         {
+             foe[i].ativo = false;
+         }
           return MORTE;
         }
     }   
    // UnloadArq();
-    for(int i=0;i<11;i++)
+    for(int i=0;i<24;i++)
     {
         fclose(inimigo[i]);
     }
