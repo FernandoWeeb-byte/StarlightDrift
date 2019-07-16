@@ -7,7 +7,7 @@
 //-------------------------------------
 
 #define MAX_TIROS 150
-#define VIDAS_INIMIGO 5
+#define VIDAS_INIMIGO 3
 
 //-------------------------------------
 //Structs
@@ -211,19 +211,24 @@ void UnloadArq(void)
 }*/
 int Wave1()
 {
+    
     for(int i = 0;i<6;i++)
     {
-        fscanf (inimigo[i], "%f %f\n",&foe[i].posicao.x,&foe[i].posicao.y);
-        
+        if(foe[i].ativo)
+        {
+            fscanf (inimigo[i], "%f %f\n",&foe[i].posicao.x,&foe[i].posicao.y);
+        }
     }
     
     
     for(int i=0;i<6;i++)
+    {
         if(foe[i].ativo)
         {
             DrawTexture(enemi,foe[i].posicao.x,foe[i].posicao.y,RAYWHITE);
         
         }
+    }    
         return counter;
     
     
@@ -233,19 +238,32 @@ int wave2()
 {
     for(int i=6;i<11;i++)
     {
-        fscanf (inimigo[i], "%f %f\n",&foe[i].posicao.x,&foe[i].posicao.y);
+        if(foe[i].ativo)
+        {
+            fscanf (inimigo[i], "%f %f\n",&foe[i].posicao.x,&foe[i].posicao.y);
+        }    
     }
     for(int i=6;i<11;i++)
     {   
         if(foe[i].ativo)
         {
             DrawTexture(enemi,foe[i].posicao.x,foe[i].posicao.y,RAYWHITE);
-            if(foe[i].posicao.y>Altura_Tela)
+            if(foe[i].posicao.y>=Altura_Tela || foe[i].posicao.x<0 || foe[i].posicao.x>720)
             {
                 counter++;
+                foe[i].ativo = false;
             }
         }
     }
+    
+    for(int i=6;i<11;i++)
+    {
+        if(foe[i].ativo)
+        {
+            foe[i].raio=20;
+        }
+    }
+
     
     for(int j=6;j<11;j++)
     {
@@ -288,7 +306,10 @@ int wave3()
     
  for(int i=11;i<18;i++)
     {
-        fscanf (inimigo[i], "%f %f\n",&foe[i].posicao.x,&foe[i].posicao.y);
+        if(foe[i].ativo)
+        {
+            fscanf (inimigo[i], "%f %f\n",&foe[i].posicao.x,&foe[i].posicao.y);
+        }
     }
     for(int i=11;i<18;i++)
     {   
@@ -298,6 +319,16 @@ int wave3()
         
         }
     }
+    
+    
+    for(int i=11;i<18;i++)
+    {
+        if(foe[i].ativo)
+        {
+            foe[i].raio=20;
+        }
+    }
+
     
     for(int j=11;j<18;j++)
     {
@@ -331,7 +362,7 @@ int wave3()
         
     }
        
-    
+    return counter;
 }
 void Inicializa_jogador(void)
 {
@@ -347,18 +378,20 @@ void Inicializa_jogador(void)
 }
 void Inicializa_inimigo(void)
 {
-    for(int i=0;i<18;i++)
+    for(int i=0;i<6;i++)
     {
         foe[i].ativo = true;
                 
     }
     
-    for(int i=0;i<18;i++)
+    for(int i=0;i<6;i++)
     {
-        foe[i].raio=20;
-        
+        if(foe[i].ativo)
+        {
+            foe[i].raio=20;
+        }
     }
-     for(int i=0;i<18;i++)
+     for(int i=0;i<19;i++)
     {
         foe[i].vida = VIDAS_INIMIGO;  
     }
@@ -444,6 +477,20 @@ void UpdateGame(void){
     Movimento();
     Atirar();
     TiroInimigo();
+    if(counter == 6)
+    {
+        for(int i=6;i<11;i++)
+        {
+            foe[i].ativo = true;
+        }
+    }
+    if(counter == 11)
+    {
+        for(int i=11;i<18;i++)
+        {
+            foe[i].ativo = true;
+        }
+    }
     
     if(jogador.invicible)
     {
@@ -459,10 +506,12 @@ void UpdateGame(void){
     {
         for(int j = 0;j<MAX_TIROS;j++)
         {
-            if(tiro[j].ativa && CheckCollisionCircles(tiro[j].posicao,tiro[j].raio,(Vector2){foe[i].posicao.x+20,foe[i].posicao.y+25},foe[i].raio))
+            if(tiro[j].ativa && CheckCollisionCircles(tiro[j].posicao,tiro[j].raio,(Vector2){foe[i].posicao.x+20,foe[i].posicao.y+25},foe[i].raio) && foe[i].ativo)
             {
                 
-                    foe[i].vida--;
+                   foe[i].vida--;
+                    tiro[j].ativa = false;
+                    
                     if(foe[i].vida == 0)
                     {
                         foe[i].ativo = false;
@@ -478,7 +527,7 @@ void UpdateGame(void){
     {
         for(int j = 0;j<MAX_TIROS;j++)
         {
-            if(atiradorinimigo[j].ativa && CheckCollisionCircles(atiradorinimigo[j].posicao,atiradorinimigo[j].raio,(Vector2){jogador.posicao.x+20,jogador.posicao.y+25},jogador.raio) && !jogador.invicible)
+                if(atiradorinimigo[j].ativa && CheckCollisionCircles(atiradorinimigo[j].posicao,atiradorinimigo[j].raio,(Vector2){jogador.posicao.x+20,jogador.posicao.y+25},jogador.raio) && !jogador.invicible)
             {
             
                 vida--;
@@ -492,20 +541,23 @@ void UpdateGame(void){
         
     for(int i=0;i<18;i++)
     {
-        if(foe[i].ativo && CheckCollisionCircles(jogador.posicao,jogador.raio,foe[i].posicao,foe[i].raio) && !jogador.invicible)
-            {
+            if(foe[i].ativo && CheckCollisionCircles(jogador.posicao,jogador.raio,foe[i].posicao,foe[i].raio) && !jogador.invicible)
+         {
                 vida--;
-                foe[i].ativo=false;
+                foe[i].ativo = false;
                 jogador.invicible = true;
                 
                 
-            }
         }
+    }
+        
+
 }
 void DrawGame(void){
     ClearBackground(BLACK);
     DrawTextureEx(fundo,(Vector2){0,movbackground},0.0f,1.0f,WHITE);
     DrawTextureEx(fundo,(Vector2){0,-fundo.height + movbackground},0.0f,1.0f,WHITE);
+    DrawText(FormatText("contador: %i", counter), 100, 100, 30, WHITE);
     if(!jogador.invicible)
     {
         DrawTexture(Nave,jogador.posicao.x,jogador.posicao.y,RAYWHITE);
@@ -782,8 +834,8 @@ GAMESTATE Jogo(void)
     inimigo[3] = fopen ("/raylib/StarlightDrift/enemy/enemies.txt4","r");
     inimigo[4] = fopen ("/raylib/StarlightDrift/enemy/enemies.txt5","r");
     inimigo[5] = fopen ("/raylib/StarlightDrift/enemy/enemies.txt6","r");
-    inimigo[6] = fopen ("/raylib/StarlightDrift/enemy/padrao1.txt","r");
-    inimigo[7] = fopen ("/raylib/StarlightDrift/enemy/padrao2txt","r");
+    inimigo[6] = fopen ("/raylib/StarlightDrift/enemy/padraoduplo1.txt","r");
+    inimigo[7] = fopen ("/raylib/StarlightDrift/enemy/padraoduplo2.txt","r");
     inimigo[8] = fopen ("/raylib/StarlightDrift/enemy/padraolongo.txt","r");
     inimigo[9] = fopen ("/raylib/StarlightDrift/enemy/padraozig1.txt","r");
     inimigo[10] = fopen ("/raylib/StarlightDrift/enemy/padraozig2.txt","r");
@@ -834,7 +886,11 @@ GAMESTATE Jogo(void)
             
             if(wave2() >= 10)
             {
-                wave3();
+                if(wave3() >= 17)
+                {   
+                    
+                    
+                }
             }
         }
         DrawRectangle(0, 0, Largura_Tela, Altura_Tela, Fade(BLACK, alpha));
@@ -1152,3 +1208,4 @@ GAMESTATE MenuScreen(void)
         EndDrawing();
     }
 }
+ 
