@@ -112,6 +112,7 @@ static int iFrame = 0;
 static int firerate = 5;
 static int corshield = 1;
 static int skillpoints = 0;
+static int parte_dial = 1;
 static float movbackground;
 static Texture2D Nave;
 static Texture2D fundo;
@@ -135,11 +136,12 @@ static int iFrame;
 static int counter;
 static bool skvel;
 static bool skatk;
+static bool dial = true;
 //static bool skbv;
 //static bool skbd;
 static bool vidainf=false;
 static bool goodmusic=false;
-static int fase = 1;
+static int fase = 2;
 static int actx=0;
 static int acty=0;
 static int actz=0;
@@ -151,7 +153,6 @@ static Tiro atiradorinimigo[MAX_TIROS];
 static float vol = 1;
 static Boss PERICLES;
 static Rectangle barradevida[3];//lembrar de colocar diferentes cores depois 
-
 
 //-------------------------------------
 //Funcoes Modulares Locais
@@ -186,6 +187,7 @@ static void LightBarrier(float mult);
 static void Atirar(void); //
 static void TiroInimigo(void);//tentativa de fzr o tiro do inimigo
 static void Cheats(void);
+static void Dialogo(void);
 //static void LoadArq(void); //loada os arq
 //static void Wave1(FILE* lado1,FILE* lado2); //wave de teste
 //static void UnloadArq(void);//unloada arq
@@ -266,6 +268,7 @@ void InitMenu(void)
     UnloadImage(FFXVdecristal);
     UnloadImage(fundodecristal);
     UnloadImage(luadecristal);
+    dial = true;
     fase = 1;
 }
 
@@ -566,6 +569,37 @@ int wave5()
     }
        
     return counter; 
+}
+
+void Dialogo()
+{
+    switch(parte_dial)
+    {
+        case 1:
+        {
+            DrawRectangle(100,50,520,300,BLACK);
+            DrawText(TextFormat("Você está se aproximando de um cinturão de asteroides!\nCuidado com as defesas de luz do inimigo! Troque de cor para passar\nileso\nPressione E ou Q para trocar de cor\nW - Movimento para cima\nS - Movimento para baixo\nA - Movimento para direita\nD - Movimento para esquerda\nBarra de espaço - Atirar\n\nPressione espaço para continuar"),110,70,15,WHITE);
+            
+            if(IsKeyPressed(KEY_SPACE))
+            {
+                dial = false;
+                parte_dial++;
+            }
+            break;
+        }
+        case 2:
+        {
+            DrawRectangle(100,50,520,140,BLACK);
+            DrawText(TextFormat("Seus inimigos detectaram você e enviaram um batalhão para lhe parar!\nDesvie de seus ataques e derrote-os para prosseguir\n\n\nAperte espaço para continuar"),110,70,15,WHITE);
+            
+            if(IsKeyPressed(KEY_SPACE))
+            {
+                dial = false;
+                parte_dial++;
+            }
+            break;
+        }
+    }
 }
 
 void Inicializa_jogador(void)
@@ -1239,8 +1273,15 @@ GAMESTATE Fase1(void) //fase1
         if(!gameOver)
         {
             BeginDrawing();
-            UpdateFase1();
             DrawFase1();
+            if(dial)
+            {
+                Dialogo();
+            }
+            else
+            {
+                UpdateFase1();
+            }
             DrawRectangle(0, 0, Largura_Tela, Altura_Tela, Fade(BLACK, alpha));
             EndDrawing();
         }
@@ -1268,6 +1309,8 @@ GAMESTATE Fase2(void) //fase2
     bool FadeIn = true;
     bool FadeOut = false;
     skillpoints+=1;
+    dial = true;
+    
     StopSound(BGM);
     //LoadArq();
     inimigo[0] = fopen ("/raylib/StarlightDrift/enemy/enemies.txt","r");
@@ -1317,6 +1360,7 @@ GAMESTATE Fase2(void) //fase2
             Pause();
         if(FadeIn)
         {
+            
             alpha -= 0.01f;
             if(alpha<=0)
             {
@@ -1340,30 +1384,38 @@ GAMESTATE Fase2(void) //fase2
         }
         
         
-        UpdateFase2();
         BeginDrawing();
         
         DrawFase2();
-        //Wave1();
-        if(Wave1() >= 6)
+        if(dial)
         {
-            
-            if(wave2() >= 10)
+            Dialogo();
+        }
+        else
+        {
+            UpdateFase2();
+            if(Wave1() >= 6)
             {
-                if(wave3() >= 17)
-                {   
-                    if(wave4() >=24)
-                    {
-                        if(wave5() >= 32)
+            
+                if(wave2() >= 10)
+                {
+                    if(wave3() >= 17)
+                    {   
+                        if(wave4() >=24)
                         {
+                            if(wave5() >= 32)
+                            {
                             fase++;    
                             return JOGO;
+                            }
                         }
-                    }
                     
+                    }
                 }
             }
         }
+        //Wave1();
+        
         DrawRectangle(0, 0, Largura_Tela, Altura_Tela, Fade(BLACK, alpha));
         EndDrawing();
         // UnloadArq();
@@ -1802,6 +1854,8 @@ void InitFase1(void)
     Nave = LoadTextureFromImage(tempnave);
     Meteoro = LoadTextureFromImage(tempmeteor);
     
+    dial = true;
+    parte_dial = 1;
     LightCounter = 0;
     lives = 3;
     gameOver = false;
