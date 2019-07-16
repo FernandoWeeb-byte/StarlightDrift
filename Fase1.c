@@ -34,6 +34,7 @@ typedef struct PBULLET
 }PBULLET;
 
 typedef struct PLAYER
+
 {
     Vector2 pos;
     float spd;
@@ -53,7 +54,7 @@ static float backgroundScroll = 0;
 static int lives = 3;
 static int iFrame = 0;
 static int firerate = 5;
-
+static int corshield=1;
 Texture2D FundoSpace;
 Texture2D Nave;
 Texture2D Meteoro;
@@ -166,7 +167,7 @@ void LightBarrier(float mult)
         
         if(CheckCollisionCircleRec(player.pos, player.hitbox, light.Rec) && light.active && ColorToInt(player.color) != ColorToInt(light.color) && !player.invincible && cancolide)
         {
-            lives--;
+            lives++;
             cancolide = false;
             if(lives <=0)
             {
@@ -240,17 +241,35 @@ void UpdateFase1(void)
     if(IsKeyDown(KEY_D))
         player.pos.x += player.spd;
     
-    if(IsKeyDown(KEY_R))
+    if(IsKeyPressed(KEY_E))
     {
-        player.color = RED;
-    } else 
-    if(IsKeyDown(KEY_G))
+        corshield++;
+        if (corshield>3){
+            corshield=1;
+        }
+    }
+    
+    else if(IsKeyPressed(KEY_Q))
     {
-        player.color = GREEN;
-    } else 
-    if(IsKeyDown(KEY_B))
-    {
-        player.color = BLUE;
+        corshield--;
+        if (corshield<1){
+            corshield=3;
+        }
+    }
+    
+    switch(corshield){
+        case 1:{
+            player.color = RED;
+            break;
+        }
+        case 2:{
+            player.color = GREEN;
+            break;
+        }
+        case 3:{
+            player.color = BLUE;
+            break;
+        }
     }
     
     if(!gaming)
