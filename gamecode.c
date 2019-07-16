@@ -104,6 +104,7 @@ static int lives = 3;
 static int iFrame = 0;
 static int firerate = 5;
 static int corshield = 1;
+static int skillpoints = 0;
 static float movbackground;
 static Texture2D Nave;
 static Texture2D fundo;
@@ -125,7 +126,10 @@ static Inimigo foe[20]={0};//struct inimigo declarada aqui
 static int vida;
 static int iFrame;
 static int counter;
-
+static bool skvel;
+static bool skatk;
+//static bool skbv;
+//static bool skbd;
 static int fase = 1;
 
 static Player player;
@@ -468,7 +472,11 @@ void InitGame(void){
     Inicializa_jogador();
     Inicializa_tiro();
     Inicializa_inimigo();
-    
+    skvel=false;
+    skatk=false;
+    //skbv=false;
+    //skbd=false;
+    skillpoints=0;
     
     UnloadImage(NaveImg);
 }
@@ -514,6 +522,10 @@ void UnloadGame(void){
         StopSound(musica[numMusica].mus);
         UnloadSound(musica[numMusica].mus);
     }
+    for(int i=0;i<11;i++)
+        {
+            fclose(inimigo[i]);
+        }
 
 }
 void UpdateFase2(void){
@@ -764,12 +776,62 @@ void Pause(void)
         {
             BeginDrawing();
             ClearBackground(BLACK);
+            Vector2 rato = GetMousePosition();
+            DrawText(TextFormat("%i %i",(int)rato.x,(int)rato.y),0,0,20,WHITE);
             DrawText("PAUSE",150,50,50,RAYWHITE);
             DrawText("Para voltar pressione P",70,150,20,RAYWHITE);
-            DrawText("Para desistir pressione M durante o jogo",70,250,20,RAYWHITE);
+            DrawText(TextFormat("SKILL POINTS: %i",skillpoints),150,250,50,WHITE);
+            
+            
+            DrawText("+ Balas verticais",70,450,20,WHITE);
+            DrawText("+ Balas diagonais",70,500,20,WHITE);
+            //velocidade da nave
+            if ((int)rato.x>=70&&(int)rato.x<=286&&(int)rato.y>=350&&(int)rato.y<=375&&!skvel){
+                DrawText("+ Velocidade da nave",70,350,30,WHITE);
+                if (IsMouseButtonPressed(0)&&skillpoints>0){
+                    skillpoints--;
+                    skvel=true;
+                    player.spd+=2.5f;
+                }
+            }
+            else if(!((int)rato.x>=70&&(int)rato.x<=286&&(int)rato.y>=350&&(int)rato.y<=375)&&skvel){
+                DrawText("+ Velocidade da nave",70,350,20,GREEN);
+            }
+            else if(!((int)rato.x>=70&&(int)rato.x<=286&&(int)rato.y>=350&&(int)rato.y<=375)&&!skvel){
+                DrawText("+ Velocidade da nave",70,350,20,WHITE);
+            }
+            else{
+                DrawText("+ Velocidade da nave",70,350,20,GREEN);
+            }
+            //quantidade de balas
+            if ((int)rato.x>=70&&(int)rato.x<=298&&(int)rato.y>=400&&(int)rato.y<=425&&!skatk){
+                DrawText("+ Velocidade das balas",70,400,30,WHITE);
+                if (IsMouseButtonPressed(0)&&skillpoints>0){
+                    skillpoints--;
+                    skatk=true;
+                    for(int i = 0;i<MAX_TIROS;i++)
+                    {
+                        player.bullet[i].spd += 10;
+                    }
+                    
+                }
+            }
+            else if(!((int)rato.x>=70&&(int)rato.x<=298&&(int)rato.y>=400&&(int)rato.y<=42)&&skatk){
+                DrawText("+ Velocidade das balas",70,400,20,GREEN);
+            }
+            else if(!((int)rato.x>=70&&(int)rato.x<=298&&(int)rato.y>=400&&(int)rato.y<=425)&&!skatk){
+                DrawText("+ Velocidade das balas",70,400,20,WHITE);
+            }
+            else{
+                DrawText("+ Velocidade das balas",70,400,20,GREEN);
+            }
+            
+            //hoje
+            DrawText("Para desistir pressione M durante o jogo",70,650,20,RAYWHITE);
             EndDrawing();
-            if(IsKeyPressed(KEY_P))
+            if (IsKeyPressed(KEY_P)){
                 break;
+            }
         }
     
 }
@@ -877,12 +939,12 @@ GAMESTATE Creditos(void)
     }
 }
 
-GAMESTATE Fase1(void)
+GAMESTATE Fase1(void) //fase1
 {
     float alpha = 1.0f;
     bool FadeIn = true;
     bool FadeOut = false;
-    
+    skillpoints++;
     SetMasterVolume(0.25);
     
     InitFase1();
@@ -951,12 +1013,12 @@ GAMESTATE Fase1(void)
     
 }
 
-GAMESTATE Fase2(void)
+GAMESTATE Fase2(void) //fase2
 {
     float alpha = 1.0f;
     bool FadeIn = true;
     bool FadeOut = false;
-    
+    skillpoints++;
     //LoadArq();
     inimigo[0] = fopen ("/raylib/StarlightDrift/enemy/enemies.txt","r");
     inimigo[1] = fopen ("/raylib/StarlightDrift/enemy/enemies.txt2","r");
@@ -1026,15 +1088,13 @@ GAMESTATE Fase2(void)
         DrawRectangle(0, 0, Largura_Tela, Altura_Tela, Fade(BLACK, alpha));
         EndDrawing();
         // UnloadArq();
-        for(int i=0;i<11;i++)
-        {
-            fclose(inimigo[i]);
-        }
+        
         if(vida <= 0)
         {
          counter = 0;
           return MORTE;
         }
+        
     }   
    
    
