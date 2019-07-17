@@ -1039,6 +1039,9 @@ void SkillPoints (void){
                 player.hitbox-=bonush;
                 break;
             }
+            if(IsKeyPressed(KEY_F1)){
+                Cheats();
+            }
             Color a,b,c,d;
             BeginDrawing();
             ClearBackground(BLACK);
