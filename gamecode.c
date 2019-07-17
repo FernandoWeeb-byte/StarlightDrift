@@ -14,7 +14,7 @@
 #define MIN_METEOR_SIZE 25
 #define CHANCECONST 11
 #define MAX_TIROS 150
-#define VIDAS_INIMIGO 5
+#define VIDAS_INIMIGO 35
 
 //-------------------------------------
 //Structs
@@ -111,8 +111,7 @@ static int lives = 3;
 static int iFrame = 0;
 static int firerate = 5;
 static int corshield = 1;
-static int skillpoints = 0;
-static int parte_dial = 1;
+static int skillpoints = 5;
 static float movbackground;
 static Texture2D Nave;
 static Texture2D fundo;
@@ -134,17 +133,18 @@ static Inimigo foe[32]={0};//struct inimigo declarada aqui
 static int vida;
 static int iFrame;
 static int counter;
-static bool skvel;
-static bool skatk;
-static bool dial = true;
-//static bool skbv;
-//static bool skbd;
+static int parte_dial = 1; 
 static bool vidainf=false;
 static bool goodmusic=false;
-static int fase = 2;
+static bool dial = true;
+static int fase = 1;
 static int actx=0;
 static int acty=0;
 static int actz=0;
+static float bonusbspd = 0;
+static float bonusspd = 0;
+static float bonusd = 0;
+static float bonush = 0;
 static Player player;
 static METEOR meteoros[MAX_METEOROS];
 static LIGHT light;
@@ -153,6 +153,7 @@ static Tiro atiradorinimigo[MAX_TIROS];
 static float vol = 1;
 static Boss PERICLES;
 static Rectangle barradevida[3];//lembrar de colocar diferentes cores depois 
+
 
 //-------------------------------------
 //Funcoes Modulares Locais
@@ -187,10 +188,8 @@ static void LightBarrier(float mult);
 static void Atirar(void); //
 static void TiroInimigo(void);//tentativa de fzr o tiro do inimigo
 static void Cheats(void);
+static void SkillPoints (void);
 static void Dialogo(void);
-//static void LoadArq(void); //loada os arq
-//static void Wave1(FILE* lado1,FILE* lado2); //wave de teste
-//static void UnloadArq(void);//unloada arq
 
 
 
@@ -214,7 +213,9 @@ int main(void)
             break;
             
             case JOGO:
+                
                 InitGame();
+                
                 if(fase == 1)
                 {
                     gameState = Fase1();
@@ -570,7 +571,6 @@ int wave5()
        
     return counter; 
 }
-
 void Dialogo()
 {
     switch(parte_dial)
@@ -579,11 +579,12 @@ void Dialogo()
         {
             DrawRectangle(100,50,520,300,BLACK);
             DrawText(TextFormat("Você está se aproximando de um cinturão de asteroides!\nCuidado com as defesas de luz do inimigo! Troque de cor para passar\nileso\nPressione E ou Q para trocar de cor\nW - Movimento para cima\nS - Movimento para baixo\nA - Movimento para direita\nD - Movimento para esquerda\nBarra de espaço - Atirar\n\nPressione espaço para continuar"),110,70,15,WHITE);
-            
+
             if(IsKeyPressed(KEY_SPACE))
             {
                 dial = false;
                 parte_dial++;
+                SkillPoints();
             }
             break;
         }
@@ -591,26 +592,26 @@ void Dialogo()
         {
             DrawRectangle(100,50,520,140,BLACK);
             DrawText(TextFormat("Seus inimigos detectaram você e enviaram um batalhão para lhe parar!\nDesvie de seus ataques e derrote-os para prosseguir\n\n\nAperte espaço para continuar"),110,70,15,WHITE);
-            
+
             if(IsKeyPressed(KEY_SPACE))
             {
                 dial = false;
                 parte_dial++;
+                
             }
             break;
         }
     }
 }
-
 void Inicializa_jogador(void)
 {
     player.pos.x = 360;
     player.pos.y = 700;
-    player.spd = 5;
+    player.spd = 5+bonusspd;
     player.color = BLUE;
     player.firerate = 0;
-    player.hitbox = 9;
-    player.dmg = 7;
+    player.hitbox = 9-bonush;
+    player.dmg = 7+bonusd;
     player.tiro = 1;
     player.invincible = false;
 }
@@ -655,10 +656,6 @@ void InitGame(void){
     Inicializa_jogador();
     Inicializa_tiro();
     Inicializa_inimigo();
-    skvel=false;
-    skatk=false;
-    //skbv=false;
-    //skbd=false;
     
     
     
@@ -681,7 +678,7 @@ void Inicializa_tiro(void)
         player.bullet[i].pos.x = player.pos.x;
         player.bullet[i].pos.y = player.pos.y + 8;
         player.bullet[i].spd = 10;
-        player.bullet[i].raio = 5;
+        player.bullet[i].raio = 5+bonusd*0.8f;
         player.bullet[i].active = false;
         player.bullet[i].cor = BLUE;
     }
@@ -829,10 +826,10 @@ void UpdateFase2(void){
             if(player.bullet[j].active && CheckCollisionCircles(player.bullet[j].pos,player.bullet[j].raio,(Vector2){foe[i].posicao.x+20,foe[i].posicao.y+25},foe[i].raio) && foe[i].ativo)
             {
                 
-                   foe[i].vida--;
+                    foe[i].vida-=player.dmg;
                     player.bullet[j].active = false;
                     
-                    if(foe[i].vida == 0)
+                    if(foe[i].vida <= 0)
                     {
                         foe[i].ativo = false;
                         counter++;
@@ -1029,67 +1026,116 @@ void TiroInimigo(void)
             
 }
 
-
-void Pause(void)
-{   
-   
-        
-        while(1)
-        {
+void SkillPoints (void){
+    
+        while (1){
+            if (IsKeyPressed(KEY_ENTER)){
+                for (int x=0;x<MAX_TIROS;x++){
+                    player.bullet[x].spd+=bonusbspd;
+                    player.bullet[x].raio+=bonusd*0.8;
+                }
+                player.dmg+=bonusd;
+                player.spd+=bonusspd;
+                player.hitbox-=bonush;
+                break;
+            }
+            Color a,b,c,d;
             BeginDrawing();
             ClearBackground(BLACK);
             Vector2 rato = GetMousePosition();
             DrawText(TextFormat("%i %i",(int)rato.x,(int)rato.y),0,0,20,WHITE);
+            DrawText(TextFormat("SKILL POINTS: %i",skillpoints),150,50,50,WHITE);
+            DrawText("Velocidade das balas:",30,250,30,BLUE);
+            DrawText("Velocidade da nave:",30,300,30,BLUE);
+            DrawText("Tamanho da hitbox:",30,350,30,BLUE);
+            DrawText("Dano das balas:",30,400,30,BLUE);
+            if (bonusbspd>0){
+                a=GREEN;
+            }
+            else{
+                a=WHITE;
+            }
+            if (bonusspd>0){
+                b=GREEN;
+            }
+            else{
+                b=WHITE;
+            }
+            if (bonush>0){
+                c=GREEN;
+            }
+            else{
+                c=WHITE;
+            }
+            if (bonusd>0){
+                d=GREEN;
+            }
+            else{
+                d=WHITE;
+            }
+            DrawText(TextFormat("%.2f",10+bonusbspd),500,250,30,a);
+            DrawText(TextFormat("%.2f",5+bonusspd),500,300,30,b);
+            DrawText(TextFormat("%.2f",9-bonush),500,350,30,c);
+            DrawText(TextFormat("%.2f",7+bonusd),500,400,30,d);
+            DrawText("+",480,250,30,LIME);
+            DrawText("+",480,300,30,LIME);
+            DrawText("+",480,350,30,LIME);
+            DrawText("+",480,400,30,LIME);
+            DrawText("-",577,250,30,RED);
+            DrawText("-",577,300,30,RED);
+            DrawText("-",577,350,30,RED);
+            DrawText("-",577,400,30,RED);
+            DrawText(TextFormat("Pressione ENTER\n   para confirmar"),150,750,40,WHITE);
+            if (rato.x>=480&&rato.x<=496&&rato.y>=254&&rato.y<=272&&bonusbspd<8&&IsMouseButtonPressed(0)&&skillpoints>0){
+                bonusbspd+=2.0f;
+                skillpoints--;
+            }
+            if (rato.x>=576&&rato.x<=591&&rato.y>=254&&rato.y<=272&&bonusbspd>0&&IsMouseButtonPressed(0)&&skillpoints>=0){
+                bonusbspd-=2.0f;
+                skillpoints++;
+                
+            }
+            if (rato.x>=576&&rato.x<=591&&rato.y>=304&&rato.y<=322&&bonusspd>0&&IsMouseButtonPressed(0)&&skillpoints>=0){
+                bonusspd-=1.0f;
+                skillpoints++;
+            }
+            if (rato.x>=480&&rato.x<=496&&rato.y>=304&&rato.y<=322&&bonusspd<5&&IsMouseButtonPressed(0)&&skillpoints>0){
+                bonusspd+=1.0f;
+                skillpoints--;
+            }
+            if (rato.x>=576&&rato.x<=591&&rato.y>=354&&rato.y<=372&&bonush>0&&IsMouseButtonPressed(0)&&skillpoints>=0){
+                bonush-=0.5f;
+                skillpoints++;
+            }
+            if (rato.x>=480&&rato.x<=496&&rato.y>=354&&rato.y<=372&&bonush<2.0f&&IsMouseButtonPressed(0)&&skillpoints>0){
+                bonush+=0.5f;
+                skillpoints--;
+            }
+            if (rato.x>=576&&rato.x<=591&&rato.y>=404&&rato.y<=422&&bonusd>0&&IsMouseButtonPressed(0)&&skillpoints>=0){
+                bonusd-=1.0f;
+                skillpoints++;
+            }
+            if (rato.x>=480&&rato.x<=496&&rato.y>=404&&rato.y<=422&&bonusd<10&&IsMouseButtonPressed(0)&&skillpoints>0){
+                bonusd+=1.0f;
+                skillpoints--;
+            }
+            
+            
+            EndDrawing();
+            
+            
+    }
+}
+void Pause(void)
+{   
+
+        while(1)
+        {
+            BeginDrawing();
+            ClearBackground(BLACK);
             DrawText("PAUSE",150,50,50,RAYWHITE);
             DrawText("Para voltar pressione P",70,150,20,RAYWHITE);
-            DrawText(TextFormat("SKILL POINTS: %i",skillpoints),150,250,50,WHITE);
             
-            
-            DrawText("+ Balas verticais",70,450,20,WHITE);
-            DrawText("+ Balas diagonais",70,500,20,WHITE);
-            //velocidade da nave
-            if ((int)rato.x>=70&&(int)rato.x<=286&&(int)rato.y>=350&&(int)rato.y<=375&&!skvel){
-                DrawText("+ Velocidade da nave",70,350,30,WHITE);
-                if (IsMouseButtonPressed(0)&&skillpoints>0){
-                    skillpoints--;
-                    skvel=true;
-                    player.spd+=2.5f;
-                }
-            }
-            else if(!((int)rato.x>=70&&(int)rato.x<=286&&(int)rato.y>=350&&(int)rato.y<=375)&&skvel){
-                DrawText("+ Velocidade da nave",70,350,20,GREEN);
-            }
-            else if(!((int)rato.x>=70&&(int)rato.x<=286&&(int)rato.y>=350&&(int)rato.y<=375)&&!skvel){
-                DrawText("+ Velocidade da nave",70,350,20,WHITE);
-            }
-            else{
-                DrawText("+ Velocidade da nave",70,350,20,GREEN);
-            }
-            //quantidade de balas
-            if ((int)rato.x>=70&&(int)rato.x<=298&&(int)rato.y>=400&&(int)rato.y<=425&&!skatk){
-                DrawText("+ Velocidade das balas",70,400,30,WHITE);
-                if (IsMouseButtonPressed(0)&&skillpoints>0){
-                    skillpoints--;
-                    skatk=true;
-                    for(int i = 0;i<MAX_TIROS;i++)
-                    {
-                        player.bullet[i].spd += 10;
-                    }
-                    
-                }
-            }
-            else if(!((int)rato.x>=70&&(int)rato.x<=298&&(int)rato.y>=400&&(int)rato.y<=42)&&skatk){
-                DrawText("+ Velocidade das balas",70,400,20,GREEN);
-            }
-            else if(!((int)rato.x>=70&&(int)rato.x<=298&&(int)rato.y>=400&&(int)rato.y<=425)&&!skatk){
-                DrawText("+ Velocidade das balas",70,400,20,WHITE);
-            }
-            else{
-                DrawText("+ Velocidade das balas",70,400,20,GREEN);
-            }
-            
-            //hoje
-            DrawText("Para desistir pressione M durante o jogo",70,650,20,RAYWHITE);
             EndDrawing();
             if (IsKeyPressed(KEY_P)){
                 break;
@@ -1224,13 +1270,13 @@ GAMESTATE Fase1(void) //fase1
     float alpha = 1.0f;
     bool FadeIn = true;
     bool FadeOut = false;
-    skillpoints+=1;
     SetMasterVolume(0.25);
     
     InitFase1();
     
     while(1)
     {
+        
         if(IsKeyPressed(KEY_F1)){
             Cheats();
         }
@@ -1273,10 +1319,12 @@ GAMESTATE Fase1(void) //fase1
         if(!gameOver)
         {
             BeginDrawing();
+            
             DrawFase1();
             if(dial)
             {
                 Dialogo();
+                
             }
             else
             {
@@ -1287,6 +1335,7 @@ GAMESTATE Fase1(void) //fase1
         }
         else
         {
+            
             StopSound(BGM);
             FadeOut = true;
         }
@@ -1308,9 +1357,7 @@ GAMESTATE Fase2(void) //fase2
     float alpha = 1.0f;
     bool FadeIn = true;
     bool FadeOut = false;
-    skillpoints+=1;
     dial = true;
-    
     StopSound(BGM);
     //LoadArq();
     inimigo[0] = fopen ("/raylib/StarlightDrift/enemy/enemies.txt","r");
@@ -1360,7 +1407,6 @@ GAMESTATE Fase2(void) //fase2
             Pause();
         if(FadeIn)
         {
-            
             alpha -= 0.01f;
             if(alpha<=0)
             {
@@ -1384,19 +1430,19 @@ GAMESTATE Fase2(void) //fase2
         }
         
         
+        
         BeginDrawing();
         
         DrawFase2();
-        if(dial)
-        {
+        //Wave1();
+        if (dial){
             Dialogo();
         }
-        else
-        {
+        else{
             UpdateFase2();
             if(Wave1() >= 6)
             {
-            
+                
                 if(wave2() >= 10)
                 {
                     if(wave3() >= 17)
@@ -1405,17 +1451,16 @@ GAMESTATE Fase2(void) //fase2
                         {
                             if(wave5() >= 32)
                             {
-                            fase++;    
-                            return JOGO;
+                                fase++;    
+                                return JOGO;
                             }
                         }
-                    
+                        
                     }
                 }
             }
         }
-        //Wave1();
-        
+            
         DrawRectangle(0, 0, Largura_Tela, Altura_Tela, Fade(BLACK, alpha));
         EndDrawing();
         // UnloadArq();
@@ -1441,7 +1486,6 @@ GAMESTATE Fase3(void) //fase3
     float alpha = 1.0f;
     bool FadeIn = true;
     bool FadeOut = false;
-    skillpoints+=1;
         while(1)
         {
             if(IsKeyPressed(KEY_F1)){
@@ -1547,7 +1591,6 @@ GAMESTATE Ops(void)
 GAMESTATE morte(void)
 {
     //triste = LoadSound("/raylib/StarlightDrift/sounds/naruto.mp3");
-    skillpoints=0;
     bool fade = false;
     bool fadein = true;
     Rectangle recsair = {415, 620, 85, 25};
@@ -1853,7 +1896,6 @@ void InitFase1(void)
     FundoSpace = LoadTextureFromImage(tempspace);
     Nave = LoadTextureFromImage(tempnave);
     Meteoro = LoadTextureFromImage(tempmeteor);
-    
     dial = true;
     parte_dial = 1;
     LightCounter = 0;
@@ -1869,16 +1911,16 @@ void InitFase1(void)
     
     player.pos.x = Largura_Tela/2;
     player.pos.y = Altura_Tela/2;
-    player.spd = 5.0;
-    player.dmg = 7;
+    player.spd = 5.0+bonusspd;
+    player.dmg = 7+bonusd;
     player.color = BLUE;
-    player.hitbox = 9;
+    player.hitbox = 9-bonush;
     player.invincible = false;
     for(int i=0; i<MAX_TIROS; i++)
     {
-        player.bullet[i].spd = 10;
+        player.bullet[i].spd = 10+bonusbspd;
         player.bullet[i].active = false;
-        player.bullet[i].raio = 5;
+        player.bullet[i].raio = 5+bonusd*0.8f;
     }
     
     for(int i=0; i<MAX_METEOROS; i++)
@@ -2082,7 +2124,6 @@ GAMESTATE MenuScreen(void)
     -------------------------------------------------------------------------------------*/
     
     //Estado inicial das variaveis do menu
-    skillpoints=0;
     bool fade = false;
     bool fadeIn = true;
     Rectangle BordaFundo = {0, 0, Largura_Tela, Altura_Tela};
@@ -2136,6 +2177,9 @@ GAMESTATE MenuScreen(void)
         //Draws
         
         BeginDrawing();
+            if(IsKeyPressed(KEY_F1)){
+                Cheats();
+            }
             DrawTextureRec(Fundolua,BordaFundo,PosicaoFundo,RAYWHITE);
             DrawTexture(FFXV,-40,-20,RAYWHITE);
             DrawTexture(luacristal,400,370,RAYWHITE);
