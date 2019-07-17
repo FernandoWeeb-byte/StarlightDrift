@@ -1726,8 +1726,8 @@ GAMESTATE Ops(void)
                 {
                     if(GetKeyPressed()>=0)
                     {
-                        Player_B=GetKeyPressed();
-                        Player_B=toupper(Player_B);
+                        Player_G=GetKeyPressed();
+                        Player_G=toupper(Player_G);
                     }
                 }
             }
@@ -1742,8 +1742,8 @@ GAMESTATE Ops(void)
                 {
                     if(GetKeyPressed()>=0)
                     {
-                        Player_G=GetKeyPressed();
-                        Player_G=toupper(Player_G);
+                        Player_B=GetKeyPressed();
+                        Player_B=toupper(Player_B);
                     }
                 }
             } 
