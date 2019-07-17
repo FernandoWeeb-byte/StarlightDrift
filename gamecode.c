@@ -1737,7 +1737,7 @@ GAMESTATE Ops(void)
             }
             if(CheckCollisionPointRec(PosicaoMouse, RecB))
             {
-                DrawText(TextFormat("BLUE:%c",Player_G), 490, 590, 40, LIGHTGRAY);
+                DrawText(TextFormat("BLUE:%c",Player_B), 490, 590, 40, LIGHTGRAY);
                 if(IsMouseButtonDown(0))
                 {
                     if(GetKeyPressed()>=0)
