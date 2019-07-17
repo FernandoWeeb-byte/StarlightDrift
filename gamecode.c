@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <ctype.h>
 
 //-------------------------------------
 //defines
@@ -153,6 +154,16 @@ static Tiro atiradorinimigo[MAX_TIROS];
 static float vol = 1;
 static Boss PERICLES;
 static Rectangle barradevida[3];//lembrar de colocar diferentes cores depois 
+static int Player_Up = 'W';   
+static int Player_Down= 'S'; 
+static int Player_Left= 'A'; 
+static int Player_Right= 'D';
+static int Player_TeclaTiro= KEY_SPACE;
+static int Player_R= 'R';
+static int Player_G= 'G';
+static int Player_B= 'B';
+static int Player_ColorUp= 'Q';  
+static int Player_ColorDown= 'E';
 
 
 //-------------------------------------
@@ -924,7 +935,7 @@ void DrawFase2(void){
 void Atirar(void)
 {
     if(firerate <8) firerate++;
-    if(IsKeyDown(KEY_SPACE) && firerate >= 8)
+    if(IsKeyDown(Player_TeclaTiro) && firerate >= 8)
     {
         firerate = 0;
         PlaySound(Laser);
@@ -977,13 +988,13 @@ void Atirar(void)
 
 void Movimento(void)
 {
-    if(IsKeyDown('W') && player.pos.y >= player.hitbox)
+    if(IsKeyDown(Player_Up) && player.pos.y >= player.hitbox)
         player.pos.y -= player.spd;
-    if(IsKeyDown('A') && player.pos.x >= player.hitbox)
+    if(IsKeyDown(Player_Down) && player.pos.x >= player.hitbox)
         player.pos.x -= player.spd;
-    if(IsKeyDown('S') && player.pos.y <= Altura_Tela - 45)
+    if(IsKeyDown(Player_Left) && player.pos.y <= Altura_Tela - 45)
         player.pos.y += player.spd;
-    if(IsKeyDown('D') && player.pos.x <= Largura_Tela - 45)
+    if(IsKeyDown(Player_Right) && player.pos.x <= Largura_Tela - 45)
         player.pos.x += player.spd;
 }
 
@@ -1028,6 +1039,7 @@ void TiroInimigo(void)
 
 void SkillPoints (void){
     
+        int velnave = 720,velbala=440,velbb=720;
         while (1){
             if (IsKeyPressed(KEY_ENTER)){
                 for (int x=0;x<MAX_TIROS;x++){
@@ -1122,7 +1134,36 @@ void SkillPoints (void){
                 bonusd+=1.0f;
                 skillpoints--;
             }
+            //desenhando bala
+            DrawCircle(65,velbala,7,BLUE);
+            velbala+=10+bonusbspd;
+            if(velbala>=720)
+            {
+                velbala=440;
+            }
+                
             
+            //desenhando nave
+            DrawTexture(Nave,215,velnave,RAYWHITE);
+            velnave-=5+bonusspd;
+            if(velnave<=440)
+            {
+                velnave=720;
+            }
+                
+            
+            //desenhando hitbox
+            DrawTexture(Nave,415,560,RAYWHITE);
+            DrawCircle(440,595,9-bonush,GREEN);
+            
+            //desenhando bala c raio maior
+            DrawCircle(560,velbb,7+bonusd,BLUE);
+            velbb+=2;
+            if(velbb>=720)
+            {
+                velbb=440;
+            }
+                
             
             EndDrawing();
             
@@ -1534,7 +1575,18 @@ GAMESTATE Ops(void)
     float alpha = 1.0f;
     bool FadeIn = true;
     bool FadeOut = false;
-    Rectangle RecSair = {320, Altura_Tela-70, 80, 40};
+    Rectangle RecSair = {320, Altura_Tela-40, 80, 40};
+    Rectangle RecUp = {50, 200, 380, 40};
+    Rectangle RecDown = {50, 300, 400, 40}; 
+    Rectangle RecLeft = {50, 400, 460, 40};
+    Rectangle RecRight = {50, 500, 440, 40};
+    Rectangle RecR = {10, 600, 80, 40};
+    Rectangle RecG = {210, 600, 100, 40};
+    Rectangle RecB = {500, 600, 100, 40};
+    Rectangle RecColorUp = {50, 650, 250, 40};
+    Rectangle RecColorDown = {300, 650, 250, 40};
+    Rectangle RecTeclaTiro = {50, 720, 500, 40};
+    
     Vector2 PosicaoMouse;
     
     if(!IsSoundPlaying(menu)) PlaySound(menu);
@@ -1573,17 +1625,179 @@ GAMESTATE Ops(void)
         
         BeginDrawing();
             ClearBackground(BLACK);
-            DrawText(FormatText("Aperte Espaço para alterar o volume\nVolume atual: %.f%%", 100*vol), 174, (Altura_Tela/2)-20, 20, RAYWHITE);
+            DrawText(FormatText("Para mudar as teclas segure o botao esquerdo\ndo mouse e aperte a tecla desejada\nAperte Espaço para alterar o volume\nVolume atual: %.f%%", 100*vol),174, 20, 20, RAYWHITE);
             if(CheckCollisionPointRec(PosicaoMouse, RecSair))
             {
-                DrawText("Sair", 320, Altura_Tela-70, 40, LIGHTGRAY);
+                DrawText("Sair", 320, Altura_Tela-40, 40, LIGHTGRAY);
                 if(IsMouseButtonPressed(0))
                 {
                     FadeOut = true;
                 }
-            } else 
+            } 
+            else 
             {
-                DrawText("Sair", 335, Altura_Tela-60, 25, GRAY);
+                DrawText("Sair", 335, Altura_Tela-30, 25, GRAY);
+            }
+            if(CheckCollisionPointRec(PosicaoMouse, RecUp))
+            {
+                DrawText(TextFormat("MOVIMENTO PARA CIMA:%c",Player_Up), 40, 190, 40, LIGHTGRAY);
+                if(IsMouseButtonDown(0))
+                {
+                    if(GetKeyPressed()>=0)
+                    {
+                        Player_Up=GetKeyPressed();
+                        Player_Up=toupper(Player_Up);
+                    }
+                }
+            } 
+            else 
+            {
+                DrawText("Movimento para Cima", 50, 200, 25, GRAY);
+            }
+            if(CheckCollisionPointRec(PosicaoMouse, RecDown))
+            {
+                DrawText(TextFormat("MOVIMENTO PARA BAIXO:%c",Player_Down), 40, 290, 40, LIGHTGRAY);
+                if(IsMouseButtonDown(0))
+                {
+                    if(GetKeyPressed()>=0)
+                    {
+                        Player_Down=GetKeyPressed();
+                        Player_Down=toupper(Player_Down);
+                    }
+                }
+            }
+            else 
+            {
+                DrawText("Movimento para baixo", 50, 300, 25, GRAY);
+            }
+            if(CheckCollisionPointRec(PosicaoMouse, RecLeft))
+            {
+                DrawText(TextFormat("MOVIMENTO PARA ESQUERDA:%c",Player_Left), 40,390, 40, LIGHTGRAY);
+                if(IsMouseButtonDown(0))
+                {
+                    if(GetKeyPressed()>=0)
+                    {
+                        Player_Left=GetKeyPressed();
+                        Player_Left=toupper(Player_Left);
+                    }
+                }
+            } 
+            else 
+            {
+                DrawText("Movimento para esquerda", 50, 400, 25, GRAY);
+            }
+            if(CheckCollisionPointRec(PosicaoMouse, RecRight))
+            {
+                DrawText(TextFormat("MOVIMENTO PARA DIREITA:%c",Player_Right), 40, 490, 40, LIGHTGRAY);
+                if(IsMouseButtonDown(0))
+                {
+                    if(GetKeyPressed()>=0)
+                    {
+                        Player_Right=GetKeyPressed();
+                        Player_Right=toupper(Player_Right);
+                    }
+                }
+            } 
+            else 
+            {
+                DrawText("Movimento para direita", 50, 500, 25, GRAY);
+            }
+            if(CheckCollisionPointRec(PosicaoMouse, RecR))
+            {
+                DrawText(TextFormat("RED:%c",Player_R), 20, 590, 40, LIGHTGRAY);
+                if(IsMouseButtonDown(0))
+                {
+                    if(GetKeyPressed()>=0)
+                    {
+                        Player_R=GetKeyPressed();
+                        Player_R=toupper(Player_R);
+                    }
+                }
+            } 
+            else 
+            {
+                DrawText("Red", 10, 600, 25, GRAY);
+            }
+            
+            if(CheckCollisionPointRec(PosicaoMouse, RecG))
+            {
+                DrawText(TextFormat("GREEN:%c",Player_G), 200, 590, 40, LIGHTGRAY);
+                if(IsMouseButtonDown(0))
+                {
+                    if(GetKeyPressed()>=0)
+                    {
+                        Player_B=GetKeyPressed();
+                        Player_B=toupper(Player_B);
+                    }
+                }
+            }
+            else 
+            {
+                DrawText("Green", 210, 600, 25, GRAY);
+            }
+            if(CheckCollisionPointRec(PosicaoMouse, RecB))
+            {
+                DrawText(TextFormat("BLUE:%c",Player_G), 490, 590, 40, LIGHTGRAY);
+                if(IsMouseButtonDown(0))
+                {
+                    if(GetKeyPressed()>=0)
+                    {
+                        Player_G=GetKeyPressed();
+                        Player_G=toupper(Player_G);
+                    }
+                }
+            } 
+            else 
+            {
+                DrawText("Blue", 500, 600, 25, GRAY);
+            }
+            if(CheckCollisionPointRec(PosicaoMouse, RecColorUp))
+            {
+                DrawText(TextFormat("COLOR UP:%c",Player_ColorUp), 40, 640, 40, LIGHTGRAY);
+                if(IsMouseButtonDown(0))
+                {
+                    if(GetKeyPressed()>=0)
+                    {
+                        Player_ColorUp=GetKeyPressed();
+                        Player_ColorUp=toupper(Player_ColorUp);
+                    }
+                }
+            } 
+            else 
+            {
+                DrawText("Color Up", 50, 650, 25, GRAY);
+            }
+            if(CheckCollisionPointRec(PosicaoMouse, RecColorDown))
+            {
+                DrawText(TextFormat("COLOR DOWN:%c",Player_ColorDown), 290, 640, 40, LIGHTGRAY);
+                if(IsMouseButtonDown(0))
+                {
+                    if(GetKeyPressed()>=0)
+                    {
+                        Player_ColorDown=GetKeyPressed();
+                        Player_ColorDown=toupper(Player_ColorDown);
+                    }
+                }
+            }
+            else 
+            {
+                DrawText("Color Down", 300, 650, 25, GRAY);
+            }
+            if(CheckCollisionPointRec(PosicaoMouse, RecTeclaTiro))
+            {
+                DrawText(TextFormat("TECLA TIRO:%c",Player_TeclaTiro), 40, 710, 40, LIGHTGRAY);
+                if(IsMouseButtonDown(0))
+                {
+                    if(GetKeyPressed()>=0)
+                    {
+                        Player_TeclaTiro=GetKeyPressed();
+                        Player_TeclaTiro=toupper(Player_TeclaTiro);
+                    }
+                }
+            } 
+            else 
+            {
+                DrawText("Tecla Tiro", 50, 720, 25, GRAY);
             }
             DrawRectangle(0, 0, Largura_Tela, Altura_Tela, Fade(BLACK, alpha));
         EndDrawing();
@@ -1678,24 +1892,47 @@ void UpdateFase1(void)
     if(backgroundScroll > Altura_Tela) backgroundScroll = 0;
     if(!IsSoundPlaying(BGM)) PlaySound(BGM);
     
-    if(IsKeyDown(KEY_W))
+    if(IsKeyDown(Player_Up))
         player.pos.y -= player.spd;
-    if(IsKeyDown(KEY_S))
+    if(IsKeyDown(Player_Down))
         player.pos.y += player.spd;
-    if(IsKeyDown(KEY_A))
+    if(IsKeyDown(Player_Left))
         player.pos.x -= player.spd;
-    if(IsKeyDown(KEY_D))
+    if(IsKeyDown(Player_Right))
         player.pos.x += player.spd;
     
-    if(IsKeyPressed(KEY_E))
+    if(IsKeyPressed(Player_ColorUp))
     {
         corshield++;
         if (corshield>3){
             corshield=1;
         }
     }
+    
+    if(IsKeyPressed(Player_ColorDown))
+    {
+        corshield--;
+        if (corshield<1){
+            corshield=3;
+        }
+    }
+    
+    if(IsKeyPressed(Player_R))
+    {
+        corshield=1;
+    }
+    
+    if(IsKeyPressed(Player_G))
+    {
+        corshield=2;
+    }
+    
+    if(IsKeyPressed(Player_B))
+    {
+        corshield=3;
+    }
 
-    switch(corshield){
+    /*switch(corshield){
         case 1:{
             player.color = RED;
             break;
@@ -1708,15 +1945,9 @@ void UpdateFase1(void)
             player.color = BLUE;
             break;
         }
-    }
+    }*/
     
-    if(IsKeyPressed(KEY_Q))
-    {
-        corshield--;
-        if (corshield<1){
-            corshield=3;
-        }
-    }
+    
 
     switch(corshield){
         case 1:{
@@ -2142,7 +2373,8 @@ GAMESTATE MenuScreen(void)
     GAMESTATE returnstate;
     float alpha = 1.0f;
     
-    if(!IsSoundPlaying(menu)) PlaySound(menu);
+    if(!IsSoundPlaying(menu)) 
+        PlaySound(menu);
     
     while(1)
     {
