@@ -15,7 +15,7 @@
 #define MIN_METEOR_SIZE 25
 #define CHANCECONST 11
 #define MAX_TIROS 150
-#define VIDAS_INIMIGO 35
+#define VIDAS_INIMIGO 34
 
 //-------------------------------------
 //Structs
@@ -139,6 +139,7 @@ static bool vidainf=false;
 static bool goodmusic=false;
 static bool dial = true;
 static int fase = 1;
+static int actk=0;
 static int actx=0;
 static int acty=0;
 static int actz=0;
@@ -688,7 +689,7 @@ void Inicializa_tiro(void)
     {
         player.bullet[i].pos.x = player.pos.x;
         player.bullet[i].pos.y = player.pos.y + 8;
-        player.bullet[i].spd = 10;
+        player.bullet[i].spd = 10+bonusbspd;
         player.bullet[i].raio = 5+bonusd*0.8f;
         player.bullet[i].active = false;
         player.bullet[i].cor = BLUE;
@@ -742,6 +743,12 @@ void Cheats(void){
             if (actz>1){
                 actz=0;
             }
+            if (IsKeyPressed(KEY_FOUR)){
+                actk++;
+            }
+            if (actk>1){
+                actk=0;
+            }
             BeginDrawing();
             ClearBackground(BLACK);
             DrawText("CHEATS",250,10,50,RED);
@@ -753,7 +760,7 @@ void Cheats(void){
                 DrawText("1 - Vidas infinitas",30,140,30,GREEN);
             }
             else{
-                
+                vidainf=false;
                 DrawText("1 - Vidas infinitas",30,140,30,WHITE);
             }
             if (acty){
@@ -761,6 +768,7 @@ void Cheats(void){
                 DrawText("2 - Música melhora em 304954.3%",30,180,30,GREEN);
             }
             else{
+                goodmusic=false;
                 DrawText("2 - Música melhora em 304954.3%",30,180,30,WHITE);
             }
             if (actz){
@@ -768,13 +776,32 @@ void Cheats(void){
                 DrawText("3 - SkillPoints p carai",30,220,30,GREEN);
             }
             else{
+                skillpoints=5;
                 DrawText("3 - SkillPoints p carai",30,220,30,WHITE);
             }
+         
             
+            if (actk){
+                bonusbspd=10.0f;
+                bonusspd=5.0f;
+                bonush=8.9f;
+                bonusd=27.0f;
+                
+                DrawText("4 - MAX stats",30,260,30,GREEN);
+            }
+            
+            else{
+                bonusbspd=0.0f;
+                bonusspd=0.0f;
+                bonush=0.0f;
+                bonusd=0.0f;
+                DrawText("4 - MAX stats",30,260,30,WHITE);
+            }
             
             
             EndDrawing();
             if(IsKeyPressed(KEY_F1)){
+                
                 break;
             }
     }
@@ -990,9 +1017,9 @@ void Movimento(void)
 {
     if(IsKeyDown(Player_Up) && player.pos.y >= player.hitbox)
         player.pos.y -= player.spd;
-    if(IsKeyDown(Player_Down) && player.pos.x >= player.hitbox)
+    if(IsKeyDown(Player_Left) && player.pos.x >= player.hitbox)
         player.pos.x -= player.spd;
-    if(IsKeyDown(Player_Left) && player.pos.y <= Altura_Tela - 45)
+    if(IsKeyDown(Player_Down) && player.pos.y <= Altura_Tela - 45)
         player.pos.y += player.spd;
     if(IsKeyDown(Player_Right) && player.pos.x <= Largura_Tela - 45)
         player.pos.x += player.spd;
@@ -1060,6 +1087,7 @@ void SkillPoints (void){
             Vector2 rato = GetMousePosition();
             DrawText(TextFormat("%i %i",(int)rato.x,(int)rato.y),0,0,20,WHITE);
             DrawText(TextFormat("SKILL POINTS: %i",skillpoints),150,50,50,WHITE);
+            DrawText(TextFormat("Você recebeu alguns pontos de habilidade\n      Distribua-os conforme desejar!"),150,130,20,WHITE);
             DrawText("Velocidade das balas:",30,250,30,BLUE);
             DrawText("Velocidade da nave:",30,300,30,BLUE);
             DrawText("Tamanho da hitbox:",30,350,30,BLUE);
