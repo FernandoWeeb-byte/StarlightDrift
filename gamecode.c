@@ -21,7 +21,7 @@
 //Structs
 //-------------------------------------
 
-typedef enum {MENU=0, JOGO, CREDITOS, OPCOES, MORTE, SAIR} GAMESTATE;
+typedef enum {MENU=0, JOGO, CREDITOS, OPCOES, MORTE, SAIR,WIN} GAMESTATE;
 
 
 typedef struct Musica{
@@ -155,6 +155,7 @@ static bool vidainf=false;
 static bool goodmusic=false;
 static bool dial = true;
 static int fase = 1;
+static int actk=0;
 static int actx=0;
 static int acty=0;
 static int actz=0;
@@ -170,7 +171,6 @@ static Tiro atiradorinimigo[MAX_TIROS];
 static float vol = 1;
 static BOSS Pericles;
 static BBULLET bbullet[MAX_TIROS];
-static Rectangle barradevida[3];//lembrar de colocar diferentes cores depois 
 static int Player_Up = 'W';   
 static int Player_Down= 'S'; 
 static int Player_Left= 'A'; 
@@ -204,6 +204,7 @@ static GAMESTATE morte(void);
 static GAMESTATE Fase1(void);
 static GAMESTATE Fase2(void);
 static GAMESTATE Fase3(void);
+static GAMESTATE Victory(void);
 static void InitFase1(void);
 static void UpdateFase1(void);
 static void DrawFase1(void);
@@ -221,9 +222,7 @@ static void Dialogo(void);
 static void Pattern1(void);
 static void Pattern2(void);
 static void Pattern3(void);
-
-
-
+static void BossMov(void);
 int main(void)
 {
     gameState=MENU;
@@ -271,6 +270,10 @@ int main(void)
             
             case MORTE:
                 gameState = morte();
+                break;
+                
+            case WIN:
+                gameState = Victory();
                 break;
                 
             case SAIR:
@@ -610,7 +613,7 @@ void Dialogo()
         {
             DrawRectangle(100,50,520,300,BLACK);
             DrawText(TextFormat("Você está se aproximando de um cinturão de asteroides!\nCuidado com as defesas de luz do inimigo! Troque de cor para passar\nileso\nPressione %c ou %c para trocar de cor ou\n%c para vermelho, %c para azul e %c para verde\n%c - Movimento para cima\n%c - Movimento para baixo\n%c - Movimento para direita\n%c - Movimento para esquerda\nBarra de espaço - Atirar\n\nPressione espaço para continuar",Player_ColorUp,Player_ColorDown,Player_R,Player_B,Player_G,Player_Up,Player_Down,Player_Right,Player_Left),110,70,15,WHITE);
-
+            
             if(IsKeyPressed(KEY_SPACE))
             {
                 dial = false;
@@ -623,12 +626,11 @@ void Dialogo()
         {
             DrawRectangle(100,50,520,140,BLACK);
             DrawText(TextFormat("Seus inimigos detectaram você e enviaram um batalhão para lhe parar!\nDesvie de seus ataques e derrote-os para prosseguir\n\n\nAperte espaço para continuar"),110,70,15,WHITE);
-
-            if(IsKeyPressed(KEY_SPACE))
+                        if(IsKeyPressed(KEY_SPACE))
             {
                 dial = false;
                 parte_dial++;
-                
+
             }
             break;
         }
@@ -637,7 +639,6 @@ void Dialogo()
             DrawRectangle(100,50,520,230,BLACK);
             DrawText(TextFormat("CUIDADO!"),240,70,50,RED);
             DrawText(TextFormat("Seus inimigos enviaram a sua nave mais poderosa!\nA 'Python Emperor Reaper of Imperative Computer Languages\nEnhanced Starship'         AKA P.E.R.I.C.L.E.S\n\nEsta é sua última batalha! Aperte espaço para continuar"),110,150,15,WHITE);
-
             if(IsKeyPressed(KEY_SPACE))
             {
                 dial = false;
@@ -776,6 +777,12 @@ void Cheats(void){
             if (actz>1){
                 actz=0;
             }
+            if (IsKeyPressed(KEY_FOUR)){
+                actk++;
+            }
+            if (actk>1){
+                actk=0;
+            }
             BeginDrawing();
             ClearBackground(BLACK);
             DrawText("CHEATS",250,10,50,RED);
@@ -787,7 +794,7 @@ void Cheats(void){
                 DrawText("1 - Vidas infinitas",30,140,30,GREEN);
             }
             else{
-                
+                vidainf=false;
                 DrawText("1 - Vidas infinitas",30,140,30,WHITE);
             }
             if (acty){
@@ -795,6 +802,7 @@ void Cheats(void){
                 DrawText("2 - Música melhora em 304954.3%",30,180,30,GREEN);
             }
             else{
+                goodmusic=false;
                 DrawText("2 - Música melhora em 304954.3%",30,180,30,WHITE);
             }
             if (actz){
@@ -802,13 +810,32 @@ void Cheats(void){
                 DrawText("3 - SkillPoints p carai",30,220,30,GREEN);
             }
             else{
+                skillpoints=5;
                 DrawText("3 - SkillPoints p carai",30,220,30,WHITE);
             }
+         
             
+            if (actk){
+                bonusbspd=10.0f;
+                bonusspd=5.0f;
+                bonush=8.9f;
+                bonusd=27.0f;
+                
+                DrawText("4 - MAX stats",30,260,30,GREEN);
+            }
+            
+            else{
+                bonusbspd=0.0f;
+                bonusspd=0.0f;
+                bonush=0.0f;
+                bonusd=0.0f;
+                DrawText("4 - MAX stats",30,260,30,WHITE);
+            }
             
             
             EndDrawing();
             if(IsKeyPressed(KEY_F1)){
+                
                 break;
             }
     }
@@ -1024,10 +1051,10 @@ void Movimento(void)
 {
     if(IsKeyDown(Player_Up) && player.pos.y >= player.hitbox)
         player.pos.y -= player.spd;
-    if(IsKeyDown(Player_Down) && player.pos.x >= player.hitbox)
-        player.pos.y += player.spd;
-    if(IsKeyDown(Player_Left) && player.pos.y <= Altura_Tela - 45)
+    if(IsKeyDown(Player_Left) && player.pos.x >= player.hitbox)
         player.pos.x -= player.spd;
+    if(IsKeyDown(Player_Down) && player.pos.y <= Altura_Tela - 45)
+        player.pos.y += player.spd;
     if(IsKeyDown(Player_Right) && player.pos.x <= Largura_Tela - 45)
         player.pos.x += player.spd;
 }
@@ -1592,12 +1619,21 @@ GAMESTATE Fase3(void) //fase3
             {
                 counter = 0;
                 alpha = 1.0f;
-                return MENU;
+                if(Pericles.hp <= 0)
+                {
+                    return WIN;
+                }
+                else
+                {
+                    return MENU;
+                }
             }
         }
             
-            BeginDrawing();
             
+          
+            
+            BeginDrawing();
             DrawFase3();
             if(dial)
             {
@@ -1608,10 +1644,68 @@ GAMESTATE Fase3(void) //fase3
                 UpdateFase3();
             }
             
+            if(Pericles.hp <= 0)
+            {
+                FadeOut = true;
+            }
+
             DrawRectangle(0, 0, Largura_Tela, Altura_Tela, Fade(BLACK, alpha));
-            
+
+
             EndDrawing();
         }
+}
+
+GAMESTATE Victory(void)
+{
+    float alpha = 1.0f;
+    bool FadeIn = true;
+    bool FadeOut = false;
+    SetMasterVolume(0.25);
+    Texture2D fim = LoadTexture("/raylib/StarlightDrift/texture/win.png");
+    Sound tumtis=LoadSound("/raylib/StarlightDrift/sounds/tumtis.mp3");
+    PlaySound(tumtis);
+    while(1)
+    {
+        
+        if(IsKeyPressed(KEY_F1)){
+            Cheats();
+        }
+        
+        if(IsKeyPressed('P'))
+            Pause();
+        if(FadeIn)
+        {
+            alpha -= 0.01f;
+            if(alpha<=0)
+            {
+                alpha = 0;
+                FadeIn = false;
+            }
+        } else
+        if(FadeOut)
+        {
+            alpha += 0.01f;
+            if (alpha >= 1)
+            {
+                counter = 0;
+                alpha = 1.0f;
+                StopSound(tumtis);
+                UnloadSound(tumtis);
+                return CREDITOS;
+            }
+        }
+        
+        
+        BeginDrawing();
+        DrawRectangle(0, 0, Largura_Tela, Altura_Tela, Fade(BLACK, alpha));
+        DrawTexture(fim,0,0,RAYWHITE);
+        EndDrawing();
+        if(IsKeyPressed(KEY_ENTER))
+        {
+            FadeOut = true;
+        }
+    }
 }
 
 GAMESTATE Ops(void)
@@ -1936,14 +2030,7 @@ void UpdateFase1(void)
     if(backgroundScroll > Altura_Tela) backgroundScroll = 0;
     if(!IsSoundPlaying(BGM)) PlaySound(BGM);
     
-    if(IsKeyDown(Player_Up))
-        player.pos.y -= player.spd;
-    if(IsKeyDown(Player_Down))
-        player.pos.y += player.spd;
-    if(IsKeyDown(Player_Left))
-        player.pos.x -= player.spd;
-    if(IsKeyDown(Player_Right))
-        player.pos.x += player.spd;
+    Movimento();
     
     if(IsKeyPressed(Player_ColorUp))
     {
@@ -2229,7 +2316,7 @@ void Pattern1(void)
             }
         }
     }
-    
+
     for(int i=0; i<MAX_TIROS; i++)
     {
         if(bbullet[i].active)
@@ -2379,23 +2466,19 @@ void UpdateFase3(void)
 {
     backgroundScroll += 3.0;
     if(backgroundScroll >= Altura_Tela) backgroundScroll = 0;
-    
     if(player.invincible)
     {
         iFrame++;
         if(iFrame >= 90)
         {
-            iFrame = 0;
-            player.invincible = false;
+        iFrame = 0;
+        player.invincible = false;
         }
     }
-    
     Movimento();
     Atirar();
     BossMov();
-    
     Pericles.ang += 0.03;
-    
     if(Pericles.hp>1000)
     {
         Pattern1();
@@ -2408,7 +2491,7 @@ void UpdateFase3(void)
     {
         Pattern3();
     }
-    
+
     for(int i=0; i<MAX_TIROS; i++)
     {
         if(player.bullet[i].active && CheckCollisionCircles(player.bullet[i].pos, player.bullet[i].raio, Pericles.pos, Pericles.hitbox))
@@ -2423,48 +2506,44 @@ void UpdateFase3(void)
                     bbullet[i].active = false;
                 }
             }
-        
+
         }
     }
-    
 }
 
 void DrawFase3(void)
 {
-    DrawTexture(fundo, 0, backgroundScroll, RAYWHITE);
-    DrawTexture(fundo, 0, backgroundScroll - fundo.height, RAYWHITE);
-    
-    if(!player.invincible)
-    {
-        DrawTexture(Nave, player.pos.x - Nave.width/2, player.pos.y - Nave.height/2, RAYWHITE);
-    } else 
-    {
-        if(iFrame%3 == 0 || iFrame%4 == 0)
+    ClearBackground(BLACK);
+        DrawTexture(fundo, 0, backgroundScroll, RAYWHITE);
+        DrawTexture(fundo, 0, backgroundScroll - fundo.height, RAYWHITE);
+        if(!player.invincible)
+        {
+            DrawTexture(Nave, player.pos.x - Nave.width/2, player.pos.y - Nave.height/2, RAYWHITE);
+        } else 
+        {
+            if(iFrame%3 == 0 || iFrame%4 == 0)
             {
                 DrawTexture(Nave, player.pos.x - Nave.width/2, player.pos.y - Nave.height/2, RAYWHITE);
             }
-    }
-    DrawCircleV(player.pos, player.hitbox, PINK);
-    DrawTexture(pericles, Pericles.pos.x - pericles.width/2, Pericles.pos.y - pericles.height/2, RAYWHITE);
-    //DrawCircleV(Pericles.pos, Pericles.hitbox, PURPLE);
-    
-    for(int i=0; i<MAX_TIROS; i++)
-    {
-        if(player.bullet[i].active)
-        {
-            DrawCircleV(player.bullet[i].pos, player.bullet[i].raio, BLUE);
         }
-        if(bbullet[i].active)
+        DrawCircleV(player.pos, player.hitbox, PINK);
+        DrawTexture(pericles, Pericles.pos.x - pericles.width/2, Pericles.pos.y - pericles.height/2, RAYWHITE);
+        //DrawCircleV(Pericles.pos, Pericles.hitbox, PURPLE);
+        
+        for(int i=0; i<MAX_TIROS; i++)
         {
-            DrawCircleV(bbullet[i].pos, bbullet[i].raio, RED);
+            if(player.bullet[i].active)
+            {
+                DrawCircleV(player.bullet[i].pos, player.bullet[i].raio, BLUE);
+            }
+            if(bbullet[i].active){
+                DrawCircleV(bbullet[i].pos, bbullet[i].raio, RED);
+            }
         }
-    }
-    
-    if(Pericles.hp>1000)
-    {
-        DrawRectangle(20, 20, Largura_Tela-40, 20, GREEN);
-        DrawRectangle(20, 20, (Largura_Tela*(Pericles.hp - 1000)/500) - 40, 20, BLUE);
-    } else 
+        if(Pericles.hp>1000){
+            DrawRectangle(20, 20, Largura_Tela-40, 20, GREEN);
+            DrawRectangle(20, 20, (Largura_Tela*(Pericles.hp - 1000)/500) - 40, 20, BLUE);
+        } else 
     if(Pericles.hp>500)
     {
         DrawRectangle(20, 20, Largura_Tela-40, 20, RED);
@@ -2480,19 +2559,19 @@ void InitFase3(void)
     Image tempnave = LoadImage("/raylib/StarlightDrift/texture/nave.png");
     Image tempfundo = LoadImage("/raylib/StarlightDrift/texture/space.png");
     Image tempboss = LoadImage("/raylib/StarlightDrift/texture/boss.png");
-    
+
     ImageResize(&tempnave, 50, 60);
     ImageResize(&tempfundo, Largura_Tela, Altura_Tela);
     ImageResize(&tempboss,200,250);
-    
+
     Nave = LoadTextureFromImage(tempnave);
     fundo = LoadTextureFromImage(tempfundo);
     pericles = LoadTextureFromImage(tempboss);
-    
+
     UnloadImage(tempnave);
     UnloadImage(tempfundo);
     UnloadImage(tempboss);
-    
+
     player.pos.x = Largura_Tela/2;
     player.pos.y = Largura_Tela*0.8;
     /*player.spd = 7;
@@ -2510,7 +2589,7 @@ void InitFase3(void)
         bbullet[i].rad = 7;
         bbullet[i].raio = 7;
     }
-    
+
     Pericles.pos.x = Largura_Tela/2;
     Pericles.pos.y = Altura_Tela*0.2;
     Pericles.hitbox = 70;
@@ -2528,12 +2607,12 @@ void BossMov(void)
     {
         Pericles.npos.x = GetRandomValue(Pericles.hitbox, Largura_Tela - Pericles.hitbox);
         Pericles.npos.y = GetRandomValue(Pericles.hitbox, Altura_Tela/3.0f);
-        
+
         x = Pericles.npos.x - Pericles.pos.x;
         y = Pericles.npos.y - Pericles.pos.y;
-        
+
         float norma = sqrt((x*x) + (y*y));
-        
+
         Pericles.spd.x = x/norma;
         Pericles.spd.y = y/norma;
     } else 
@@ -2544,6 +2623,8 @@ void BossMov(void)
     }
     BossMovCounter++;
     if(BossMovCounter>90) BossMovCounter = 0;
+        
+        
 }
 
 void LightBarrier(float mult)
