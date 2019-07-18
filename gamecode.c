@@ -118,12 +118,12 @@ typedef struct Inimigo    //****************************************************
 //Variaveis Globais
 //-------------------------------------
 static const int Largura_Tela = 720;
-static const int Altura_Tela = 876;
+static const int Altura_Tela = 756;
 static bool gameOver = false;
 static bool gaming = true;
 static int LightCounter = 0;
 static float backgroundScroll = 0;
-static int lives = 3;
+static int lives;
 static int iFrame = 0;
 static int firerate = 5;
 static int corshield = 1;
@@ -698,6 +698,7 @@ void InitGame(void){
     enemi = LoadTextureFromImage(enemy);
     UnloadImage(enemy);
     vida = 3;
+    lives = 3;
     InitMovBackground();
     Inicializa_jogador();
     Inicializa_tiro();
@@ -745,6 +746,8 @@ void Inicializa_tiro(void)
 void UnloadGame(void){
     UnloadTexture(Nave);
     UnloadTexture(fundo);
+    
+   
     if (musica[numMusica].ativa){
         StopSound(musica[numMusica].mus);
         UnloadSound(musica[numMusica].mus);
@@ -1388,6 +1391,7 @@ GAMESTATE Fase1(void) //fase1
         }
         if(IsKeyPressed('M'))
         {  
+            UnloadSound(Laser);
             gameOver = true;
             FadeOut = true;
         }
@@ -1412,10 +1416,13 @@ GAMESTATE Fase1(void) //fase1
                 
                 if(gameOver)
                 {
+                    
+                    UnloadSound(Laser);
                     return MORTE;
                 }
                 if(LightCounter>30)
                 {
+                    UnloadSound(Laser);
                     fase++;
                     return JOGO;
                 }
@@ -1464,6 +1471,7 @@ GAMESTATE Fase2(void) //fase2
     bool FadeIn = true;
     bool FadeOut = false;
     dial = true;
+    GAMESTATE returnstate;
     StopSound(BGM);
     //LoadArq();
     inimigo[0] = fopen ("/raylib/StarlightDrift/enemy/enemies.txt","r");
@@ -1507,6 +1515,7 @@ GAMESTATE Fase2(void) //fase2
         }
         if(IsKeyPressed('M'))
         {  FadeOut = true;
+            returnstate = MENU;
            
         }
         if(IsKeyPressed('P'))
@@ -1574,9 +1583,14 @@ GAMESTATE Fase2(void) //fase2
         if(vida <= 0)
         {
          counter = 0;
+         parte_dial--;
+         UnloadTexture(enemi);
+         UnloadSound(Laser);
+         
          for(int i=0;i<32;i++)
          {
              foe[i].ativo = false;
+             fclose(inimigo[i]);
          }
           return MORTE;
         }
@@ -1619,7 +1633,7 @@ GAMESTATE Fase3(void) //fase3
             {
                 counter = 0;
                 alpha = 1.0f;
-                if(Pericles.hp <= 0)
+                if(Pericles.hp <= 0 )
                 {
                     return WIN;
                 }
@@ -1647,6 +1661,15 @@ GAMESTATE Fase3(void) //fase3
             if(Pericles.hp <= 0)
             {
                 FadeOut = true;
+                
+            }
+            else if(gameOver)
+            {
+                gameOver = false;
+                parte_dial--;
+                UnloadSound(Laser);
+                UnloadTexture(pericles);
+                return MORTE;
             }
 
             DrawRectangle(0, 0, Largura_Tela, Altura_Tela, Fade(BLACK, alpha));
@@ -2264,7 +2287,7 @@ void InitFase1(void)
     dial = true;
     parte_dial = 1;
     LightCounter = 0;
-    lives = 3;
+    //lives = 3;
     gameOver = false;
     
     UnloadImage(tempmeteor);
@@ -2331,7 +2354,10 @@ void Pattern1(void)
         }
         if(bbullet[i].active && !player.invincible && CheckCollisionCircles(bbullet[i].pos, bbullet[i].raio, player.pos, player.hitbox))
         {
-            lives--;
+            if(!vidainf)
+            {
+                lives--;
+            }
             if(lives <=0)
             {
                 gameOver = true;
@@ -2406,7 +2432,10 @@ void Pattern2(void)
         }
         if(bbullet[i].active && !player.invincible && CheckCollisionCircles(bbullet[i].pos, bbullet[i].raio, player.pos, player.hitbox))
         {
-            lives--;
+            if(!vidainf)
+            {
+                lives--;
+            }
             if(lives <= 0)
             {
                 gameOver = true;
@@ -2452,7 +2481,10 @@ void Pattern3(void)
         }
         if(bbullet[i].active && !player.invincible && CheckCollisionCircles(player.pos, player.hitbox, bbullet[i].pos, bbullet[i].raio))
         {
-            lives--;
+            if(!vidainf)
+            {
+                lives--;
+            }
             if(lives <= 0)
             {
                 gameOver = true;
@@ -2509,6 +2541,20 @@ void UpdateFase3(void)
 
         }
     }
+    
+    if(CheckCollisionCircles(player.pos,player.hitbox,Pericles.pos, Pericles.hitbox) && !player.invincible)
+         {
+                if (!vidainf)
+                {
+                    vida--;
+                }
+                
+                
+                player.invincible = true;
+                
+                
+        }
+    
 }
 
 void DrawFase3(void)
@@ -2580,6 +2626,7 @@ void InitFase3(void)
     player.firerate = 5;
     player.invincible = false;*/
     dial = true;
+    
     for(int i=0; i<MAX_TIROS; i++)
     {
         player.bullet[i].active = false;
