@@ -118,7 +118,7 @@ typedef struct Inimigo    //****************************************************
 //Variaveis Globais
 //-------------------------------------
 static const int Largura_Tela = 720;
-static const int Altura_Tela = 756;
+static const int Altura_Tela = 876;
 static bool gameOver = false;
 static bool gaming = true;
 static int LightCounter = 0;
@@ -145,6 +145,7 @@ static Musica musica[10];
 static Sound menu;
 static Sound Laser;
 static Sound triste;
+static Sound bossbgm;
 static Sound BGM;
 static Inimigo foe[32]={0};//struct inimigo declarada aqui
 static int vida;
@@ -154,6 +155,7 @@ static int parte_dial = 1;
 static bool vidainf=false;
 static bool goodmusic=false;
 static bool dial = true;
+static int LightFrame = 0;
 static int fase = 1;
 static int actk=0;
 static int actx=0;
@@ -226,7 +228,7 @@ static void BossMov(void);
 int main(void)
 {
     gameState=MENU;
-    InitWindow(Largura_Tela, Altura_Tela, "Starlight Drift Limpo");
+    InitWindow(Largura_Tela, Altura_Tela, "Final Fantasy CC");
     InitAudioDevice();
     menu = LoadSound("/raylib/StarlightDrift/sounds/Main_Menu.mp3");
     triste = LoadSound("/raylib/StarlightDrift/sounds/naruto.mp3");
@@ -576,7 +578,7 @@ int wave5()
         if(foe[j].ativo)
         {
                 foe[j].chancedetiro=GetRandomValue(0,100);
-            if(foe[j].chancedetiro<=20)
+            if(foe[j].chancedetiro<=11)
             {
                 foe[j].contador += 5;
                 
@@ -954,7 +956,7 @@ void DrawFase2(void){
     ClearBackground(BLACK);
     DrawTextureEx(fundo,(Vector2){0,movbackground},0.0f,1.0f,WHITE);
     DrawTextureEx(fundo,(Vector2){0,-fundo.height + movbackground},0.0f,1.0f,WHITE);
-    DrawText(FormatText("contador: %i", counter), 100, 100, 30, WHITE);
+    //DrawText(FormatText("contador: %i", counter), 100, 100, 30, WHITE);
     if(!player.invincible)
     {
         DrawTexture(Nave,player.pos.x,player.pos.y,RAYWHITE);
@@ -1611,8 +1613,10 @@ GAMESTATE Fase3(void) //fase3
             if(IsKeyPressed(KEY_F1)){
             Cheats();
         }
-        if(IsKeyPressed('M'))
-        {  FadeOut = true;
+        if(IsKeyPressed('M'))  
+        {  
+            FadeOut = true;
+            StopSound(bossbgm);
            
         }
         if(IsKeyPressed('P'))
@@ -1669,6 +1673,7 @@ GAMESTATE Fase3(void) //fase3
                 parte_dial--;
                 UnloadSound(Laser);
                 UnloadTexture(pericles);
+                UnloadSound(bossbgm);
                 return MORTE;
             }
 
@@ -2004,7 +2009,7 @@ GAMESTATE morte(void)
         BeginDrawing();
         ClearBackground(BLACK);
         
-        DrawText("homem negro fodase", 100, 300, 60, RED);
+        DrawText("Se Fudeu", 100, 300, 60, RED);
         
         if(CheckCollisionPointRec(posicaoMouse,recsair))
         {
@@ -2138,6 +2143,7 @@ void UpdateFase1(void)
         player.pos.y = Altura_Tela - Nave.height/2;
     
     Atirar();
+    
     float input = 1+(LightCounter/30);
     
     if(gaming)
@@ -2286,6 +2292,7 @@ void InitFase1(void)
     Meteoro = LoadTextureFromImage(tempmeteor);
     dial = true;
     parte_dial = 1;
+    LightFrame = 0;
     LightCounter = 0;
     //lives = 3;
     gameOver = false;
@@ -2496,6 +2503,7 @@ void Pattern3(void)
 
 void UpdateFase3(void)
 {
+    if(!IsSoundPlaying(bossbgm)) PlaySound(bossbgm);
     backgroundScroll += 3.0;
     if(backgroundScroll >= Altura_Tela) backgroundScroll = 0;
     if(player.invincible)
@@ -2572,7 +2580,7 @@ void DrawFase3(void)
                 DrawTexture(Nave, player.pos.x - Nave.width/2, player.pos.y - Nave.height/2, RAYWHITE);
             }
         }
-        DrawCircleV(player.pos, player.hitbox, PINK);
+        //DrawCircleV(player.pos, player.hitbox, PINK);
         DrawTexture(pericles, Pericles.pos.x - pericles.width/2, Pericles.pos.y - pericles.height/2, RAYWHITE);
         //DrawCircleV(Pericles.pos, Pericles.hitbox, PURPLE);
         
@@ -2617,6 +2625,8 @@ void InitFase3(void)
     UnloadImage(tempnave);
     UnloadImage(tempfundo);
     UnloadImage(tempboss);
+    
+    bossbgm = LoadSound("/raylib/StarlightDrift/sounds/Volatile Reaction.mp3");
 
     player.pos.x = Largura_Tela/2;
     player.pos.y = Largura_Tela*0.8;
@@ -2676,7 +2686,6 @@ void BossMov(void)
 
 void LightBarrier(float mult)
 {
-    static int LightFrame = 0;
     static int ShowFrame = 0;
     static bool cancolide = true;
     
@@ -2860,7 +2869,7 @@ GAMESTATE MenuScreen(void)
             DrawTextureRec(Fundolua,BordaFundo,PosicaoFundo,RAYWHITE);
             DrawTexture(FFXV,-40,-20,RAYWHITE);
             DrawTexture(luacristal,400,370,RAYWHITE);
-            DrawText(FormatText("Mouse: %.f, %.f\nFrame: %i", PosicaoMouse.x, PosicaoMouse.y, frameCounter), 0, 0, 20, RAYWHITE); //debug
+           // DrawText(FormatText("Mouse: %.f, %.f\nFrame: %i", PosicaoMouse.x, PosicaoMouse.y, frameCounter), 0, 0, 20, RAYWHITE); //debug
             if(CheckCollisionPointRec(PosicaoMouse, RecGame))
             {
                 DrawText("Novo Jogo",400,560,40,LIGHTGRAY);
