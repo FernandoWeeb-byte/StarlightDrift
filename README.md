@@ -1,8 +1,4 @@
 # StarlightDrift
 
-//1-Criar uma tela
-2-Responsividade do tecladoni
-3-Desenhar um objeto
-4-Mov
-5-Tiro
-6-
+//StarlightDrift é um jogo bullet hell feito em C onde você controla uma nave e tem que passar por 3 fases para completar
+
